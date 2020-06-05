@@ -9,8 +9,9 @@
 status](https://github.com/tidymodels/learntidymodels/workflows/R-CMD-check/badge.svg)](https://github.com/tidymodels/learntidymodels/actions)
 <!-- badges: end -->
 
-Learn tidymodels in the browser or locally in your RStudio IDE with
-interactive learnr primers\!
+Learn [tidymodels](https://www.tidymodels.org/) in the browser or
+locally in your RStudio IDE with interactive
+[learnr](https://rstudio.github.io/learnr/) primers\!
 
 ## Installation
 

@@ -1,0 +1,292 @@
+---
+title: "Dimension Reduction with recipes"
+output: 
+  learnr::tutorial:
+    progressive: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE, message=FALSE}
+library(learnr)
+library(tidymodels)
+library(tidyverse)
+library(embed)
+set.seed(9876)
+
+
+knitr::opts_chunk$set(echo = FALSE)
+
+zoo_names <- scan(text="animal_name
+hair
+feathers
+eggs
+milk
+airborne
+aquatic
+predator
+toothed
+backbone
+breathes
+venomous
+fins
+legs
+tail
+domestic
+catsize
+class", what="character")
+anim_types <- tribble(~class, ~type,
+                      1, "mammal",
+                      2, "bird",
+                      3, "reptile",
+                      4, "fish",
+                      5, "amphibian",
+                      6, "insect",
+                      7, "other_arthropods")
+
+zoo <- 
+  read_csv("http://archive.ics.uci.edu/ml/machine-learning-databases/zoo/zoo.data", 
+           col_names = zoo_names) %>%
+  left_join(anim_types) %>%
+  select(-class)
+# exercise.lines = 5
+
+
+pca_rec <- recipe(data = zoo, formula = ~.) %>%
+  update_role(animal_name, type, new_role = "id") %>%
+  step_normalize(all_predictors()) %>%
+  step_pca(all_predictors())
+pca_prep <- prep(pca_rec)
+pca_juice <- juice(pca_prep)
+```
+
+
+## Welcome
+
+Dimension reduction is a regularly used unsupervised method in exploratory data analysis and predictive models.
+
+This tutorial will teach you how to apply these methods using [recipes](https://recipes.tidymodels.org/) package, which is a part of the [tidymodels](https://www.tidymodels.org) metapackge.
+
+If you are new to [tidymodels](https://www.tidymodels.org), you can learn what you need with the five [Get Started articles on tidymodels.org](https://www.tidymodels.org/start/). Second article, [Preprocessing your data with recipes](https://www.tidymodels.org/start/recipes/), shows many great things you can do with [recipes](https://recipes.tidymodels.org/).
+
+The tutorial focuses on two algorithms:
+
+1. Linear dimensionality reduction with [Principal component analysis (PCA)](https://en.wikipedia.org/wiki/Principal_component_analysis)   
+2. Non-linear dimensionality reduction with [UMAP](https://umap-learn.readthedocs.io/en/latest/how_umap_works.html)
+
+Using [recipes](https://recipes.tidymodels.org/) we will apply these methods to explore our data. However, these methods can also be used for [feature extraction](https://en.wikipedia.org/wiki/Feature_extraction) prior to modeling. 
+
+Let's get started!
+
+## Enter the `zoo`
+
+We will use the `zoo` dataset to explore these methods. `zoo` contains observations collected on `r nrow(zoo)` zoo animals.
+
+To see the first ten rows of the dataset click "Run Code".
+
+```{r intro-zoo, exercise=TRUE}
+zoo
+```
+
+You can use the black triangle that appears at the top right of the table to scroll through all of the columns in `zoo`.
+
+Alternatively, use `glimpse()` to see columns in a more compact way:
+
+```{r glimpse-zoo, exercise=TRUE}
+
+```
+
+
+```{r glimpse-zoo-solution}
+glimpse(zoo)
+```
+
+
+We can see that `zoo` includes variables such as:
+
+1. `animal_name`, name of the animal observed
+2. `type`, type of the animal   
+3. And `r ncol(zoo)-2` other characteristics such as: `hair`, if the animal has hair (coded in `1` for yes and `0` for no), or `legs`, how many legs does the animal have, etc.
+
+### Explore the `zoo`
+
+Let's see how many animals were observed from each type.
+Click "Run Code" to get the answer.
+
+```{r type-bar, exercise=TRUE}
+zoo %>%
+  ggplot(aes(type)) +
+  geom_bar()
+```
+
+We can see that there are many mammals and birds, but fewer reptiles and amphibians in `zoo`.
+
+We can also look at the distribution of animals that lay `eggs` across animal types. Click `Run Code` to generate the plot. 
+
+```{r type-eggs-bar, exercise=TRUE}
+zoo %>%
+  mutate(eggs=recode(eggs, `1`="Lays Eggs", `0`="Doesn't lay eggs")) %>%
+  ggplot(aes(type, fill=eggs)) +
+  geom_bar()
+```
+
+We can see that majority of the mammals don't produce eggs. 
+Can you find the one mammal that does?
+
+```{r find-eggs, exercise=TRUE}
+# Remember dplyr package? 
+# You can use filter() to choose rows/cases where conditions are true.
+
+```
+
+```{r find-eggs-hint, eval=FALSE}
+___ %>%
+  filter(___ == ___)
+```
+
+```{r find-eggs-solution, eval=FALSE}
+zoo %>%
+  filter(type == "mammal",
+         eggs == 1)
+```
+
+
+<!-- Let's see how these animal features correlate with each other. -->
+<!-- Run the code to plot the correlation matrix using the [corrr](https://cran.r-project.org/web/packages/corrr/vignettes/using-corrr.html) package. -->
+
+<!-- ```{r} -->
+<!-- library(corrr) -->
+<!-- zoo %>% -->
+<!--   select(-animal_name, -type) %>% -->
+<!--   correlate() %>% -->
+<!--   rearrange() %>% -->
+<!--   rplot(shape = 15, colours = c("darkorange", "white", "darkcyan"), print_cor=TRUE)  -->
+<!-- ``` -->
+
+<!-- We can see that producing eggs or milk have a very strong negative correlation. (The only reason it isn't equal to `-1` is the odd ball platypus.) -->
+
+
+## Dimension Reduction with **recipes**
+
+We would like to explore the relationship of these animal features in the data and how similar animals are to each other. Potentially, we would like to see if same `type` of animals will _cluster closely_ upon dimension reduction.
+
+### Principal Component Analysis
+
+Let's start by implementing principal component analysis (PCA) using [recipes](https://recipes.tidymodels.org/) from [tidymodels](https://www.tidymodels.org).
+
+First, we will create our **recipe**.
+
+Let's go through the steps we took to create this **recipe**
+
+1. Define a dataset and _formula_ using `recipe()`      
+  We provide our data `zoo` and our formula `~.`. Notice that we do not define an outcome and use `.` in our formula to select all variables for the next steps of the analysis.    
+  
+2. Change the _role_ of identifier variables with `update_role()`     
+  While we already told recipe to include all variables, we want to exclude identifier columns `animal_name` or `type` from our analysis. On the other hand we would like to keep these columns for the next steps when we are plotting our results. By using `update_role()` we achieve this without completely dropping these variables for the next steps.   
+  
+3. Normalize variables with `step_normalize`   
+  With this step we tell recipe to normalize numeric data to have a standard deviation of one and a mean of zero. We also use the helper function `all_predictors()` to select all the variables we would like to normalize    
+  
+4. Finally, we tell the recipe to convert all variables (except `animal_name` and `type`) into principal components with `step_pca()`.
+
+
+Click "Run Code" to create a recipe object and print it.
+
+```{r pca-rec, exercise=TRUE, exercise.lines=6}
+pca_rec <- recipe(data = zoo, formula = ~.) %>%
+  update_role(animal_name, type, new_role = "id") %>%
+  step_normalize(all_predictors()) %>%
+  step_pca(all_predictors())
+
+pca_rec
+```
+
+Not the expected output?   
+
+Because so far we only _defined_ our recipe, but did not run or implement it. To get the results from our PCA, we need evaluate our **recipe** using `prep()`.
+  
+```{r pca-prep, exercise=TRUE}
+pca_prep <- prep(pca_rec)
+pca_prep
+```
+
+Can you see the difference between the outputs? After `prep()` we can see that centering for, and PCA extraction with all columns of interest has been completed or "[trained]".
+
+We can also look at the steps this recipe contains with `tidy()`:
+
+```{r tidy-prep, exercise=TRUE}
+tidy(pca_prep)
+```
+
+We can see that two `type` of steps are contained in this prepped recipe: (1) `normalize` and (2) `pca`.
+
+Now, in order to extract the values for plotting, we need to use `juice()`. This way we can extract the step `pca`.
+
+Click "Run Code" to plot the first and second principal components.
+
+```{r juice-plot, exercise=TRUE}
+pca_juice <- juice(pca_prep)
+pca_juice
+
+pca_juice %>%
+  ggplot(aes(PC1, PC2, label=animal_name)) +
+  geom_point(aes(color = type), alpha = 0.7, size = 2)+
+  geom_text(check_overlap = TRUE, hjust = "inward") +
+  labs(color = NULL)
+```
+
+
+### UMAP
+
+Now do you think you can take the same steps to make a plot with UMAP algorithm? You can follow the pretty much the same steps.
+
+Some hints:
+
+1. Change `step_pca()` to `step_umap`
+2. When plotting, swap `PC1, PC2` with `umap_1, umap_2`
+
+Now, give it a go!
+
+
+```{r umap-try, exercise=TRUE, exercise.lines=12}
+
+```
+
+
+```{r umap-try-solution, eval=FALSE}
+umap_rec <- recipe(~., data = zoo) %>%
+  update_role(animal_name, type, new_role = "id") %>%
+  step_normalize(all_predictors()) %>%
+  step_umap(all_predictors())
+
+umap_prep <- prep(umap_rec)
+
+juice(umap_prep) %>%
+  ggplot(aes(umap_1, umap_2, label=animal_name)) +
+  geom_point(aes(color = type), alpha = 0.7, size = 2)+
+  geom_text(check_overlap = TRUE, hjust = "inward") +
+  labs(color = NULL)
+```
+
+<!-- ### Quiz -->
+
+<!-- *You can include any number of single or multiple choice questions as a quiz. Use the `question` function to define a question and the `quiz` function for grouping multiple questions together.* -->
+
+<!-- Some questions to verify that you understand the purposes of various base and recommended R packages: -->
+
+<!-- ```{r quiz} -->
+<!-- quiz( -->
+<!--   question("Which package contains functions for installing other R packages?", -->
+<!--     answer("base"), -->
+<!--     answer("tools"), -->
+<!--     answer("utils", correct = TRUE), -->
+<!--     answer("codetools") -->
+<!--   ), -->
+<!--   question("Which of the R packages listed below are used to create plots?", -->
+<!--     answer("lattice", correct = TRUE), -->
+<!--     answer("tools"), -->
+<!--     answer("stats"), -->
+<!--     answer("grid", correct = TRUE) -->
+<!--   ) -->
+<!-- ) -->
+<!-- ``` -->
+

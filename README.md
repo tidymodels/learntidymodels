@@ -23,9 +23,28 @@ For now, you can install the development version from
 devtools::install_github("tidymodels/learntidymodels")
 ```
 
-## Example
+## How to run the tutorials
 
-How to run the tutorials…
+To run the tutorials, you should also install the `learnr` package. Once
+both `learntidymodels` and `learnr` packages are installed, you can
+easily start any tutorial with:
+
+``` r
+install.packages("learnr")
+learnr::run_tutorial("tutorial_of_choice", package = "learntidymodels")
+```
+
+For example:
+
+``` r
+learnr::run_tutorial("PCA_recipes", package = "learntidymodels")
+```
+
+## List of available tutorials
+
+| Tutorial      | Description                                                                                     |
+| :------------ | :---------------------------------------------------------------------------------------------- |
+| `PCA_recipes` | Learn how to conduct dimensionality reduction algorithms using recipes package from tidymodels. |
 
 ## Code of Conduct
 

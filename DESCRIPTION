@@ -20,7 +20,8 @@ Description: The 'tidymodels' ecosystem is a collection of packages for
     and 'learnr'.
 License: MIT + file LICENSE
 Suggests: 
-    testthat
+    testthat,
+    learnr
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)

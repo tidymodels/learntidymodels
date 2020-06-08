@@ -5,3 +5,4 @@
 ^\.github$
 ^cran-comments\.md$
 ^LICENSE\.md$
+^inst/tutorials/pca-recipe/pca-recipe\.Rmd$

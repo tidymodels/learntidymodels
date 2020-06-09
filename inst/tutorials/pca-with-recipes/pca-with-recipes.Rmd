@@ -11,8 +11,6 @@ library(learnr)
 library(tidymodels)
 library(tidyverse)
 library(embed)
-set.seed(9876)
-
 
 knitr::opts_chunk$set(echo = FALSE)
 
@@ -150,19 +148,19 @@ zoo %>%
 ```
 
 
-<!-- Let's see how these animal features correlate with each other. -->
-<!-- Run the code to plot the correlation matrix using the [corrr](https://cran.r-project.org/web/packages/corrr/vignettes/using-corrr.html) package. -->
+Let's see how these animal features correlate with each other.
+Run the code to plot the correlation matrix using the [corrr](https://cran.r-project.org/web/packages/corrr/vignettes/using-corrr.html) package.
 
-<!-- ```{r} -->
-<!-- library(corrr) -->
-<!-- zoo %>% -->
-<!--   select(-animal_name, -type) %>% -->
-<!--   correlate() %>% -->
-<!--   rearrange() %>% -->
-<!--   rplot(shape = 15, colours = c("darkorange", "white", "darkcyan"), print_cor=TRUE)  -->
-<!-- ``` -->
+```{r}
+library(corrr)
+zoo %>%
+  select(-animal_name, -type) %>%
+  correlate() %>%
+  rearrange() %>%
+  rplot(shape = 15, colours = c("darkorange", "white", "darkcyan"), print_cor=TRUE)
+```
 
-<!-- We can see that producing eggs or milk have a very strong negative correlation. (The only reason it isn't equal to `-1` is the odd ball platypus.) -->
+We can see that producing eggs or milk have a very strong negative correlation. (The only reason it isn't equal to `-1` is the odd ball platypus.)
 
 
 ## Dimension Reduction with **recipes**
@@ -248,20 +246,32 @@ Now, give it a go!
 
 
 ```{r umap-try, exercise=TRUE, exercise.lines=12}
-
-```
-
-
-```{r umap-try-solution, eval=FALSE}
+set.seed(9876)
 umap_rec <- recipe(~., data = zoo) %>%
   update_role(animal_name, type, new_role = "id") %>%
   step_normalize(all_predictors()) %>%
-  step_umap(all_predictors())
+  step_pca(all_predictors())
 
 umap_prep <- prep(umap_rec)
 
 juice(umap_prep) %>%
   ggplot(aes(umap_1, umap_2, label=animal_name)) +
+  geom_point(aes(color = type), alpha = 0.7, size = 2)+
+  geom_text(check_overlap = TRUE, hjust = "inward") +
+  labs(color = NULL)
+```
+
+
+```{r umap-try-solution, eval=FALSE}
+pca_rec <- recipe(~., data = zoo) %>%
+  update_role(animal_name, type, new_role = "id") %>%
+  step_normalize(all_predictors()) %>%
+  step_umap(all_predictors())
+
+pca_prep <- prep(pca_rec)
+
+juice(pca_prep) %>%
+  ggplot(aes(PC1, PC2, label=animal_name)) +
   geom_point(aes(color = type), alpha = 0.7, size = 2)+
   geom_text(check_overlap = TRUE, hjust = "inward") +
   labs(color = NULL)

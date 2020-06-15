@@ -1,5 +1,5 @@
 ---
-title: "Dimension Reduction with recipes"
+title: "Unsupervised Dimensionality Reduction with tidymodels"
 output: 
   learnr::tutorial:
     # progressive: true
@@ -8,6 +8,8 @@ runtime: shiny_prerendered
 description: | 
   Analyze the results of correlation tests and simple regression models for many data sets at once.
 ---
+
+<script language="JavaScript" src="js/exercise-font-size.js"></script>
 
 ```{r setup, include=FALSE, message=FALSE}
 library(learnr)
@@ -70,14 +72,14 @@ Dimension reduction is a regularly used unsupervised method in exploratory data 
 
 This tutorial will teach you how to apply these methods using the [recipes](https://recipes.tidymodels.org/) package, which is a part of the [tidymodels](https://www.tidymodels.org) ecosystem, a collection of modeling packages designed with common APIs and a shared philosophy.
 
-The [recipes](https://recipes.tidymodels.org/) package is designed to help you preprocess your data _before_ training or fitting a model and contains functions for a wide range of preprocessing steps, such as:
+<!-- The [recipes](https://recipes.tidymodels.org/) package is designed to help you preprocess your data _before_ training or fitting a model and contains functions for a wide range of preprocessing steps, such as: -->
 
-+ converting qualitative predictors to indicator variables (also known as dummy variables),  
-+ transforming data to be on a different scale (e.g., taking the logarithm of a variable),  
-+ transforming whole groups of predictors together,   
-+ extracting key features from raw variables (e.g., getting the day of the week out of a date variable),
+<!-- + converting qualitative predictors to indicator variables (also known as dummy variables),   -->
+<!-- + transforming data to be on a different scale (e.g., taking the logarithm of a variable),   -->
+<!-- + transforming whole groups of predictors together,    -->
+<!-- + extracting key features from raw variables (e.g., getting the day of the week out of a date variable), -->
 
-and many more. While this might sound similar to R's _formula_ interface, **recipes** provide a plethora of additional tools for preprocessing steps, which can be searched and further explored [here](https://www.tidymodels.org/find/recipes/).
+<!-- and many more. While this might sound similar to R's _formula_ interface, **recipes** provide a plethora of additional tools for preprocessing steps, which can be searched and further explored [here](https://www.tidymodels.org/find/recipes/). -->
 
 ### Learning objectives
 
@@ -122,16 +124,17 @@ zoo
 Alternatively, use `glimpse()` to see columns in a more compact way:
 
 ```{r glimpse-zoo, exercise=TRUE}
+glimpse(___)
+```
+
+We can see that `zoo` has 18 columns, two of them (`animal_name` and `type`) are characters. 
+
+```{r cnt-}
 
 ```
 
 
-```{r glimpse-zoo-solution}
-glimpse(zoo)
-```
-
-
-We can see that `zoo` includes variables such as:
+includes variables such as:
 
 1. `animal_name`, name of the animal observed
 2. `type`, type of the animal   
@@ -263,12 +266,15 @@ Now use `summary` to summarize the roles in `pca_rec`. Can you see the two "id v
 ```
 
 
-Since PCA is a variance maximizing exercise, it is important to scale variables so their variance is commensurable. We will achieve this by adding our first step to our recipe: `step_normalize` 
+Since PCA is a variance maximizing exercise, it is important to scale variables so their variance is commensurable. We will achieve this by adding our first step to our recipe: `step_normalize`! With this step we tell recipe to normalize numeric data to have a standard deviation of one and a mean of zero. We also use the helper function `all_predictors()` to select all the variables we would like to normalize.
 
-Now, it's time to add our first **step** to our **recipe**! 
-  
-3. Normalize variables with `step_normalize`   
-  With this step we tell recipe to normalize numeric data to have a standard deviation of one and a mean of zero. We also use the helper function `all_predictors()` to select all the variables we would like to normalize    
+```{r}
+pca_rec <-recipe(~., data = zoo, ) %>%
+  update_role(animal_name, type, new_role = "id") %>%
+  step_normalize(all_predictors())
+```
+
+
   
 4. Finally, we tell the recipe to convert all variables (except `animal_name` and `type`) into principal components with `step_pca()`.
 

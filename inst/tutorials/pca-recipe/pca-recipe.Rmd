@@ -767,5 +767,55 @@ umap_bake %>%
   theme_minimal()
 ```
 
-Looks like increasing the number of UMAP components did not change our results that much. Try other hyperparameters and see if you can produce different plots. Don't forget to modify the plot accordingly.
+Looks like increasing the number of UMAP components did not change our results that much. Try other hyperparameters and see if you can produce different plots. Just don't forget to modify the plot accordingly.
 
+## Bake vs juice
+
+Throughout this tutorial, we used `bake` to apply the computations from a _trained recipe_ to our data set. The `bake` method is great because it allows us to apply a set specifications and computations generated with `prep` to our data of choice. This is especially handy when you are dealing with training, validation, or test sets during your modeling process. 
+
+However, if you are only working with one data set you can simply use `juice` to apply your computations to the defined data in your recipe. For example, throughout this tutorial, we only worked with the `zoo` data and did not need to split our data into training or test sets. We could easily extract our principal components with `juice(pca_prep)`.
+
+Let's create our recipe, add steps and train with `prep` one last time. Then extract principal components first with  `bake` and then with `juice`.
+
+```{r juice-1, exercise=TRUE}
+pca_rec <- recipe(data = zoo, formula = ~.) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  step_scale(all_predictors()) %>%
+  step_center(all_predictors()) %>%
+  step_pca(all_predictors())
+
+pca_prep <- prep(pca_rec)
+
+
+# bake
+bake(___, ___)
+```
+
+
+```{r juice-1-solution}
+pca_rec <- recipe(data = zoo, formula = ~.) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  step_scale(all_predictors()) %>%
+  step_center(all_predictors()) %>%
+  step_pca(all_predictors())
+
+pca_prep <- prep(pca_rec)
+
+
+# bake
+bake(pca_prep, zoo)
+```
+
+Great! Now, let's juice! `r emo::ji("juice")` 
+
+```{r juice-2, exercise = TRUE}
+# juice
+juice(___)
+```
+
+```{r juice-2-solution}
+# juice
+juice(pca_prep)
+```
+
+Do you see any difference in the output between bake or juice? If you do it's probably your imagination, because there's no difference between the two. 

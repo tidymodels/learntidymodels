@@ -819,3 +819,21 @@ juice(pca_prep)
 ```
 
 Do you see any difference in the output between bake or juice? If you do it's probably your imagination, because there's no difference between the two. 
+
+
+<!-- ## Final quiz -->
+
+<!-- Phew! We covered a lot material here! -->
+<!-- Do you think you could explain what you learned today to your parents, a friend, or a significant other if you had to? -->
+
+<!-- See if you can complete the quiz below too see how much learned: -->
+
+<!-- ```{r where-am-i, echo=FALSE} -->
+<!-- question("In the tidymodels ecosystem, recipes is the package that deals with", -->
+<!--   answer("Data preprocessing and/or feature engineering", correct = TRUE), -->
+<!--   answer("Fitting models"), -->
+<!--   answer("Tuning model hyperparameters", correct = TRUE), -->
+<!--   answer("Data resampling", correct = TRUE), -->
+<!--   incorrect = "Incorrect. There are packages within the tidymodels that help with that, but not the recipes package.") -->
+<!-- ) -->
+<!-- ``` -->

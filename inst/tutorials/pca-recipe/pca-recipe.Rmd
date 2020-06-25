@@ -60,6 +60,14 @@ pca_variances <- tidy(pca_prep, id = "pca", type = "variance")
 pca_bake <- bake(pca_prep, zoo)
 
 
+zoo_rec <- recipe(data = zoo, formula = ~.) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  step_normalize(all_predictors()) %>%
+  step_pca(all_predictors())
+
+zoo_prep <- prep(pca_rec)
+
+
 ### UMAP ###
 set.seed(123) 
 umap_rec <- recipe(~., data = zoo) %>%
@@ -832,8 +840,7 @@ library(embed) # load the library to use `step_umap()`
 ## Create the recipe accordingly
 umap_rec <- recipe(~., data = zoo) %>%
   update_role(animal_name, animal_type, new_role = "id") %>%
-  step_scale(all_predictors()) %>%
-  step_center(all_predictors()) %>%
+  step_normalize(all_predictors()) %>%
   step_umap(all_predictors(), ___ = ___)
 
 ## Prep your recipe
@@ -858,8 +865,7 @@ library(embed) # load the library to use `step_umap()`
 ## Create the recipe accordingly
 umap_rec <- recipe(~., data = zoo) %>%
   update_role(animal_name, animal_type, new_role = "id") %>%
-  step_scale(all_predictors()) %>%
-  step_center(all_predictors()) %>%
+  step_normalize(all_predictors()) %>%
   step_umap(all_predictors(), num_comp = 3)
 
 ## Prep your recipe
@@ -888,14 +894,12 @@ However, if you are only working with one data set you can simply use `juice` to
 Let's create our recipe, add steps and train with `prep` one last time. Then extract principal components first with  `bake` and then with `juice`.
 
 ```{r juice-1, exercise=TRUE}
-pca_rec <- recipe(data = zoo, formula = ~.) %>%
+zoo_rec <- recipe(data = zoo, formula = ~.) %>%
   update_role(animal_name, animal_type, new_role = "id") %>%
-  step_scale(all_predictors()) %>%
-  step_center(all_predictors()) %>%
+  step_normalize(all_predictors()) %>%
   step_pca(all_predictors())
 
-pca_prep <- prep(pca_rec)
-
+zoo_prep <- prep(pca_rec)
 
 # bake
 bake(___, ___)
@@ -903,20 +907,18 @@ bake(___, ___)
 
 
 ```{r juice-1-solution}
-pca_rec <- recipe(data = zoo, formula = ~.) %>%
+zoo_rec <- recipe(data = zoo, formula = ~.) %>%
   update_role(animal_name, animal_type, new_role = "id") %>%
-  step_scale(all_predictors()) %>%
-  step_center(all_predictors()) %>%
+  step_normalize(all_predictors()) %>%
   step_pca(all_predictors())
 
-pca_prep <- prep(pca_rec)
-
+zoo_prep <- prep(zoo_rec)
 
 # bake
-bake(pca_prep, zoo)
+bake(zoo_prep, zoo)
 ```
 
-Great! Now, let's juice! `r emo::ji("juice")` 
+Now, let's juice! `r emo::ji("juice")` 
 
 ```{r juice-2, exercise = TRUE}
 # juice
@@ -925,7 +927,7 @@ juice(___)
 
 ```{r juice-2-solution}
 # juice
-juice(pca_prep)
+juice(zoo_prep)
 ```
 
 Do you see any difference in the output between bake or juice? If you do it's probably your imagination, because there's no difference between the two. 

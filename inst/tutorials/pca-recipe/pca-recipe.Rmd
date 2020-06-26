@@ -234,7 +234,7 @@ zoo %>%
 
 ## Correlation matrix
 
-Having some familiarity with the animal kingdom, we would expect that most animals who produce milk do not lay eggs. In other words, we would expect to see a negative correlation between these features.
+Having some familiarity with the animal kingdom, we would expect that most animals that produce milk do not lay eggs. In other words, we would expect to see a negative correlation between these features.
 
 Let's see how these animal features correlate with each other to get a sense of these relationships.
 
@@ -330,7 +330,7 @@ Here, we define two arguments:
 
 Once we initiate the recipe, we can keep adding new [roles](https://tidymodels.github.io/recipes/reference/roles.html) and **steps**. 
 
-For example, we already told recipe to include all variables with our formula; however, we want to exclude identifier column `animal_name` and `animal_type` from our analysis. On the other hand we need these variables later when we are plotting our results. By using `update_role()` we exclude these variables from our analysis **without** completely dropping them in the next steps:
+For example, we already told our recipe to include all variables with our formula; however, we want to exclude identifier column `animal_name` and `animal_type` from our analysis. On the other hand we need these variables later when we are plotting our results. By using `update_role()` we exclude these variables from our analysis **without** completely dropping them in the next steps:
 
 ```{r role, exercise=TRUE}
 pca_rec <- recipe(~., data = zoo, ) %>%
@@ -388,7 +388,7 @@ pca_rec <-recipe(~., data = zoo, ) %>%
   step_center(all_predictors())
 ```
 
-Alternatively, we could have accomplished scaling and centering in one single step. Take a look [this group of step functions](https://recipes.tidymodels.org/reference/index.html#section-step-functions-normalization) on the recipes reference page. See if you can answer the question below correctly:
+Alternatively, we can accomplish scaling and centering in one single step. Take a look [this group of step functions](https://recipes.tidymodels.org/reference/index.html#section-step-functions-normalization) on the recipes reference page. See if you can answer the question below correctly:
 
 ```{r step-quiz, echo=FALSE}
 question("What function can replace both centering and scaling steps?",
@@ -424,14 +424,13 @@ pca_rec <-recipe(~., data = zoo, ) %>%
   step_pca(all_predictors(), id = "pca")
 ```
 
-Did you notice the additional argument `id = "pca"` there? If we a look at the [`step_pca` help page](https://recipes.tidymodels.org/reference/step_pca.html), we see that this argument allows us to provide a  unique string to identify this step. Providing a step`id` will become handy when we need to extract additional values from that step. Similarly, we could have assigned a unique id to any step we would like to work more on later.
+Did you notice the additional argument `id = "pca"` there? If we take a look at the [`step_pca` help page](https://recipes.tidymodels.org/reference/step_pca.html), we see that this argument allows us to provide a  unique string to identify this step. Providing a step`id` will become handy when we need to extract additional values from that step. Similarly, we could have assigned a unique id to any step we would like to work more on later.
 
-Now, let's print the `pca_rec`
+Now, let's print the `pca_rec` by running the following code chunk.
 
-```{r}
+```{r print-rec, exercise=TRUE}
 pca_rec
 ```
-
 
 We can see that `pca_rec` has our _id_ and _predictor_ variables as inputs and the following operations:
 
@@ -495,13 +494,12 @@ pca_loading <- tidy(___, ___)
 pca_loading <- tidy(pca_prep, 3)
 ```
 
-##### You can see that these _intermediate values_ can be different for each step, but are always called `values` when extracted with the `tidy` method. You can find the definition of these _internmediate values_ under the *Value* section in the help page of the related step function. For example, take a look at [`step_scale` help document](https://recipes.tidymodels.org/reference/step_scale.html) and scroll down to see the *Value*.
+##### You can see that these _underlying values_ can be different for each step, but are always called `values` when extracted with the `tidy` method. You can find the definition of these _underlying values_ under the *Value* section in the help page of the related step function. For example, take a look at [`step_scale` help document](https://recipes.tidymodels.org/reference/step_scale.html) and scroll down to see the *Value*.
 
-
-Alternatively, we can use the `id` argument (the one we specifically provided for this step) and specify the `type` of _intermediate value_ we would like to extract.
+Alternatively, we can use the `id` argument (the one we specifically provided for this step) and specify the `type` of _underlying value_ we would like to extract.
 
 ```{r tidy-pca-id, exercise=TRUE}
-pca_loading <- tidy(___, ___)
+pca_loading <- tidy(___, ___, ___)
 ```
 
 ```{r tidy-pca-id-solution}
@@ -546,7 +544,7 @@ load_plot %>%
 
 It looks like PC1 (first principal component) is mostly about producing milk or eggs, and having hair. Notice the loading direction for milk and hair are the same, which is the opposite of eggs. Do you remember the strongest positive correlation we found? On the other hand, PC2 seems to be about the animal having a fin or being aquatic, both of which have the opposite direction to breathing. Both tails and feathers have a strong correlation with PC3, and finally, PC4 is mostly about being domestic or a predator, which have opposite directions. Overall, we can say that PC1 is mostly about being a _mammal_, PC2 is being a _fish_ or an _aquatic animal_, PC3 is being a _bird_, and PC4 is about being domesticated.
 
-Now that we have an idea about variable loadings, let's talk about how we make this plot. Just like anything in life, we first need to get our data ready for plotting.  
+Now that we have an idea about variable loadings, let's talk about how we made this plot. Just like anything in life, we first need to get our data ready.  
 
 1. To keep our plot simple, we looked at the loadings for the first four principle components and top six variables with largest absolute loadings. For that, we assign the principal components we would like to plot to `prin_comps` and number of loadings you would like to show to `num_loads`. Feel free to change what goes into these variables to plot more or less information.  
 
@@ -765,10 +763,10 @@ set.seed(123) # set a seed to reproduce random number generation
 library(embed) # load the library to use `step_umap()`  
 
 ## Create the recipe accordingly
-umap_rec <- recipe(~., data = zoo) %>%
-  update_role(animal_name, animal_type, new_role = "id") %>%
-  step_normalize(all_predictors()) %>%
-  step___(all_predictors())
+umap_rec <- recipe(~., data = ___) %>%
+  update____(___, ___, new_role = "id") %>%
+  step_normalize(___) %>%
+  step___(___)
 
 ## Train your recipe with prep
 umap_prep <- prep(___)
@@ -889,7 +887,7 @@ Looks like increasing the number of UMAP components did not change our results t
 
 Throughout this tutorial, we used `bake` to apply the computations from a _trained recipe_ to our data set. The `bake` method is great because it allows us to apply a set specifications and computations generated with `prep` to our data of choice. This is especially handy when you are dealing with training, validation, or test sets during your modeling process. 
 
-However, if you are only working with one data set you can simply use `juice` to apply your computations to the defined data in your recipe. For example, throughout this tutorial, we only worked with the `zoo` data and did not need to split our data into training or test sets. We could easily extract our principal components with `juice(pca_prep)`.
+However, if we simply want to extract the computations generated with `prep()` and don't need to reapply them to a new data set, we can simply use `juice`. For example, throughout this tutorial, we only worked with the `zoo` data and could have easily extracted our principal components with `juice(pca_prep)`.
 
 Let's create our recipe, add steps and train with `prep` one last time. Then extract principal components first with  `bake` and then with `juice`.
 

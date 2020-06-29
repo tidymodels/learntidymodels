@@ -5,10 +5,4 @@
 ^\.github$
 ^cran-comments\.md$
 ^LICENSE\.md$
-<<<<<<< HEAD
-^inst/tutorials/pca-recipe/pca-recipe\.Rmd$
-=======
-^inst/tutorials/PCA_recipes/PCA_recipes\.Rmd$
->>>>>>> 119ccaeef44dc587848c8369ab0527cba92c66bd
-^inst/tutorials/test-tutorial/test-tutorial\.Rmd$
-^inst/tutorials/multinom-parsnip/multinom-parsnip\.Rmd$
+^inst/tutorials$

@@ -39,4 +39,5 @@ Imports:
     ggplot2,
     tidyr,
     palmerpenguins,
-    readr
+    readr,
+    emo

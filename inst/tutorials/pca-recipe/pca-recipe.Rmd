@@ -137,10 +137,10 @@ zoo
 ```
 
 
-Alternatively, use `glimpse()` from the [tidyverse](https://www.tidyverse.org/) metapackage to see columns in a more compact way. You can click on the **Solution** button to get help.
+Alternatively, use `glimpse()` from the [dplyr](https://dplyr.tidyverse.org/) package to see columns in a more compact way. You can click on the **Solution** button to get help.
 
 ```{r glimpse-zoo, exercise=TRUE, warning=FALSE, message=FALSE, error=FALSE}
-library(tidyverse)
+library(dplyr)
 glimpse(___)
 ```
 
@@ -239,15 +239,23 @@ Having some familiarity with the animal kingdom, we would expect that most anima
 
 Let's see how these animal features correlate with each other to get a sense of these relationships.
 
-Run the code to plot the correlation matrix using the [corrr](https://cran.r-project.org/web/packages/corrr/vignettes/using-corrr.html) package. The `correlate()` function generates a correlation matrix in **data frame** format, and `rearrange()` groups highly correlated variables closer together.
+Run the code to plot the correlation matrix using the [corrr](https://corrr.tidymodels.org/index.html) package. 
+
+Here we are using three functions from the corrr package:
+
+- `correlate()` generates a correlation matrix in **data frame** format.  
+- `rearrange()` groups highly correlated variables closer together.   
+- `shave()` shaves off the upper triangle of a correlation data frame by converting its cells to `NA`.
 
 ```{r corr, exercise=TRUE, message=FALSE, warning=FALSE, error=FALSE}
 library(corrr)
 zoo_corr <- zoo %>%
   # drop non-numeric columns
-  select(-___, -___) %>%
+  select(___, ___) %>%
   correlate() %>%
-  rearrange()
+  rearrange() %>%
+  shave()
+
 zoo_corr
 ```
 
@@ -257,22 +265,25 @@ zoo_corr <- zoo %>%
   # drop non-numeric columns
   select(-animal_name, -animal_type) %>%
   correlate() %>%
-  rearrange()
+  rearrange() %>%
+  shave() 
 zoo_corr
 ```
 
-The output is a data frame containing pair-wise correlation coefficients between variables. But it would take us a long time to get an overall sense of these relationships just by looking at raw numbers. Let's plot the correlation matrix to help our brains out. `r emo::ji("brain")`
+The output is a data frame containing pair-wise correlation coefficients between variables. But it would take us a long time to get an overall sense of these relationships just by looking at raw numbers. Let's plot the correlation matrix with [`corrr::rplot`](https://corrr.tidymodels.org/reference/rplot.html) to help our brains out. `r emo::ji("brain")`
 
 ```{r corr_plot, out.width='100%',exercise=TRUE, message=FALSE, warning=FALSE, error=FALSE}
 zoo_corr %>%
-  rplot(shape = 15, colours = c("#372F60", "white", "#CA225E"), print_cor=TRUE) +
+  rplot(shape = 15, colours = c("#372F60", "white", "#CA225E"), print_cor=TRUE) -> g
   theme(axis.text.x = element_text(angle = 20, hjust = .6))
 ```
 
 
+##### The [`corrr::rplot`](https://corrr.tidymodels.org/reference/rplot.html) is quite handy because it returns a ggplot object, which can be further customized with [ggplot2](https://ggplot2.tidyverse.org/) functions.
+
 So much better! 
 
-We can see that producing eggs or milk have a very strong negative correlation. (The only reason it isn't equal to `-1` is the odd ball platypus.)
+We can see that producing eggs or milk have a very strong negative correlation. (The odd ball platypus is one reason why it isn't equal to `-1`.)
 
 Now, see if you can answer the question correctly. 
 
@@ -673,7 +684,7 @@ pca_variances %>%
   ggplot(aes(___, ___)) +
   geom_col(fill="#372F60") +
   scale_y_continuous() +
-  labs(x = NULL, y = "Percent variance explained by each PCA component") +
+  labs(x = "Principal Components", y = "Variance explained (%)") +
   theme_minimal()
 ```
 
@@ -682,7 +693,7 @@ pca_variances %>%
   filter(terms == "percent variance") %>%
   ggplot(aes(component, value)) +
   geom_col(fill="#372F60") +
-  labs(x = NULL, y = "Percent variance explained by each PCA component") +
+  labs(x = "Principal Components", y = "Variance explained (%)") +
   theme_minimal()
 ```
 
@@ -693,18 +704,17 @@ pca_variances %>%
   filter(terms == "___") %>%
   ggplot(aes(___, ___)) +
   geom_col(fill="#372F60") +
-  scale_y_continuous(labels = scales::percent_format()) +
-  labs(x = NULL, y = "Cumulative percent of variance explained by each PCA component") +
+  scale_y_continuous() +
+  labs(x = "Principal Components", y = "Cumulative variance explained (%)") +
   theme_minimal()
 ```
 
 ```{r cum-var-plot-solution}
-exp_var %>%
+pca_variances %>%
   filter(terms == "cumulative percent variance") %>%
-  ggplot(aes(component, cum_var)) +
+  ggplot(aes(component, value)) +
   geom_col(fill="#372F60") +
-  scale_y_continuous(labels = scales::percent_format()) +
-  labs(x = NULL, y = "Cumulative percent of variance explained by each PCA component") +
+  labs(x = "Principal Components", y = "Cumulative variance explained (%)") +
   theme_minimal()
 ```
 

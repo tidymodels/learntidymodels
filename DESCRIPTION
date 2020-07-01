@@ -40,4 +40,7 @@ Imports:
     readr,
     emo
 Remotes:
-    rstudio-education/gradethis    
+    allisonhorst/palmerpenguins,
+    rstudio-education/gradethis,
+    hadley/emo,
+    tidymodels/embed

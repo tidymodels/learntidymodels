@@ -19,25 +19,24 @@ Description: The 'tidymodels' ecosystem is a collection of packages for
     of self-paced interactive tutorials and primers, created using R Markdown 
     and 'learnr'.
 License: MIT + file LICENSE
-Suggests: 
-    testthat
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.0.9000
+RoxygenNote: 7.1.1
 Imports: 
     learnr,
-    corrr,
-    embed,
     gradethis,
-    sortable,
-    recipes,
-    parsnip,
-    broom,
-    tune,
-    rsample,
-    ggplot2,
-    tidyr,
+    sortable (>= 0.4.2),
+    emo (>= 0.0.0.9000)
+Remotes:
+    allisonhorst/palmerpenguins,
+    rstudio-education/gradethis,
+    hadley/emo,
+    tidymodels/embed
+Depends: 
+    tidyverse,
+    tidymodels,
     palmerpenguins,
-    readr,
-    emo
+    embed,
+    corrr
+    

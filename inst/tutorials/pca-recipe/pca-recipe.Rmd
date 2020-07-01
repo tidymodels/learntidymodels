@@ -1,76 +1,949 @@
 ---
-title: "PCA Recipe"
+title: "Unsupervised dimensionality reduction with tidymodels"
 output: 
   learnr::tutorial:
+    progressive: true
+    allow_skip: true
     css: css/style.css
 runtime: shiny_prerendered
 ---
+<script language="JavaScript" src="js/exercise-font-size.js"></script>
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, message=FALSE}
 library(learnr)
-knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+library(tidyverse)
+library(recipes)
+library(embed)
+library(corrr)
+library(tidytext)
+library(gradethis)
+library(sortable)
+
+knitr::opts_chunk$set(echo = FALSE, exercise.checker = gradethis::grade_learnr)
+
+zoo_names <- c("animal_name", "hair", "feathers", "eggs", "milk", "airborne", "aquatic", "predator", "toothed", "backbone", "breathes", "venomous", "fins", "legs", "tail", "domestic", "catsize", "class")
+anim_types <- tribble(~class, ~type,
+                      1, "mammal",
+                      2, "bird",
+                      3, "reptile",
+                      4, "fish",
+                      5, "amphibian",
+                      6, "insect",
+                      7, "other_arthropods")
+zoo <- 
+  read_csv("http://archive.ics.uci.edu/ml/machine-learning-databases/zoo/zoo.data", 
+           col_names = zoo_names) %>%
+  left_join(anim_types) %>%
+  select(-class) %>%
+  rename(animal_type=type)
+
+
+### correlation ###
+zoo_corr <- zoo %>%
+  select(-animal_name, -animal_type) %>%
+  correlate() %>%
+  rearrange()
+
+
+### PCA ####
+pca_rec <- recipe(data = zoo, formula = animal_type ~.) %>%
+  update_role(animal_name, new_role = "id") %>%
+  step_scale(all_predictors()) %>%
+  step_center(all_predictors()) %>%
+  step_pca(all_predictors(), id = "pca")
+
+pca_prep <- prep(pca_rec)
+pca_loading <- tidy(pca_prep, id="pca")
+pca_variances <- tidy(pca_prep, id = "pca", type = "variance")
+
+pca_bake <- bake(pca_prep, zoo)
+
+
+zoo_rec <- recipe(data = zoo, formula = ~.) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  step_normalize(all_predictors()) %>%
+  step_pca(all_predictors())
+
+zoo_prep <- prep(pca_rec)
+
+
+### UMAP ###
+set.seed(123) 
+umap_rec <- recipe(~., data = zoo) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  step_normalize(all_predictors()) %>%
+  step_umap(all_predictors())
+
+umap_prep <- prep(umap_rec)
+umap_bake <- bake(umap_prep, zoo)
 ```
 
 
-## Topic 1
 
-### Exercise 
+## Welcome
 
-*Here's a simple exercise with an empty code chunk provided for entering the answer.*
+Dimension reduction is a regularly used unsupervised method in exploratory data analysis and predictive models.
 
-Write the R code required to add two plus two:
+This tutorial will teach you how to apply these methods using the [recipes](https://recipes.tidymodels.org/) package, which is a part of the [tidymodels](https://www.tidymodels.org) ecosystem, a collection of modeling packages designed with common APIs and a shared philosophy.
 
-```{r two-plus-two, exercise=TRUE}
+<!-- The [recipes](https://recipes.tidymodels.org/) package is designed to help you preprocess your data _before_ training or fitting a model and contains functions for a wide range of preprocessing steps, such as: -->
+
+<!-- + converting qualitative predictors to indicator variables (also known as dummy variables),   -->
+<!-- + transforming data to be on a different scale (e.g., taking the logarithm of a variable),   -->
+<!-- + transforming whole groups of predictors together,    -->
+<!-- + extracting key features from raw variables (e.g., getting the day of the week out of a date variable), -->
+
+<!-- and many more. While this might sound similar to R's _formula_ interface, **recipes** provide a plethora of additional tools for preprocessing steps, which can be searched and further explored [here](https://www.tidymodels.org/find/recipes/). -->
+
+### Learning objectives
+
+This tutorial focuses on _transforming whole groups of predictors together_ using two different dimension reduction algorithms:
+
+1. Linear dimensionality reduction with [Principal component analysis (PCA)](https://en.wikipedia.org/wiki/Principal_component_analysis)   
+2. Non-linear dimensionality reduction with [UMAP](https://umap-learn.readthedocs.io/en/latest/how_umap_works.html)
+
+Here, we will apply these methods to explore our data. These methods can also be used for [feature extraction](https://en.wikipedia.org/wiki/Feature_extraction) prior to modeling. 
+
+While we're applying these methods we will cover:
+
++ How to create a `recipe`
++ How to update a `role`
++ How to add `steps`
++ How to `prep`
++ How to `bake` or `juice`
+
+### Pre-requisites 
+
+If you are new to [tidymodels](https://www.tidymodels.org), you can learn what you need with the five [Get Started articles on tidymodels.org](https://www.tidymodels.org/start/). 
+
+The second article, [Preprocessing your data with recipes](https://www.tidymodels.org/start/recipes/), shows how to use functions from the [recipes](https://recipes.tidymodels.org/) package to pre-process your data prior to model fitting. 
+
+If you aren't familiar with the **recipes** functions yet, reading the [Preprocessing your data with recipes](https://www.tidymodels.org/start/recipes/) article would be helpful before going through this tutorial.  
+
+Let's get started!
+
+## The zoo data
+
+We will use the `zoo` dataset to explore these methods. `zoo` contains observations collected on `r nrow(zoo)` zoo animals.
+
+To see the first ten rows of the data set click on **Run Code**.   
+You can use the black triangle that appears at the top right of the table to scroll through all of the columns in `zoo`.
+
+
+```{r intro-zoo, exercise=TRUE}
+zoo
+```
+
+
+Alternatively, use `glimpse()` from the [tidyverse](https://www.tidyverse.org/) metapackage to see columns in a more compact way. You can click on the **Solution** button to get help.
+
+```{r glimpse-zoo, exercise=TRUE, warning=FALSE, message=FALSE, error=FALSE}
+library(tidyverse)
+glimpse(___)
+```
+
+```{r glimpse-zoo-solution}
+glimpse(zoo)
+```
+
+We can see that `zoo` has `r nrow(zoo)` rows and `r ncol(zoo)` columns, two of them (`animal_name` and `animal_type`) are characters. 
+
+Let's count the number animals for each `animal_type`.
+
+```{r cnt-type, exercise=TRUE}
+zoo %>% 
+  count(___)
+```
+
+```{r cnt-type-solution}
+zoo %>% 
+  count(animal_type)
+```
+
+While looking at the numbers helps, plotting is always a good idea to get an overall view of the data, especially if many sub-categories are present.
+
+Plot the number of animals in each `animal_type` category. Fill in the blanks and click on **Run Code** to generate the plot.
+
+```{r type-bar, exercise=TRUE}
+zoo %>%
+  ggplot(aes(___)) +
+  geom____(fill="#CA225E") +
+  theme_minimal()
+```
+
+```{r type-bar-solution}
+zoo %>%
+  ggplot(aes(animal_type)) +
+  geom_bar(fill="#CA225E") +
+  theme_minimal()
+```
+
+We can also look at the distribution of animals that lay `eggs` across animal types. The `eggs` column is coded in `0` and `1` for animals that "doesn't lay eggs" and "lay eggs" respectively. Let's do some data wrangling with `recode` function to plot it neatly. Click on **Solution** if you are stuck.
+
+```{r type-eggs-bar, exercise=TRUE}
+zoo %>%
+  mutate(eggs = recode(eggs, 0=___, 1=___)) %>%
+  ggplot(aes(___, fill=___)) +
+  geom___() +
+  scale_fill_manual(values = c("#372F60", "#CA225E")) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+```{r type-eggs-bar-solution}
+zoo %>%
+  mutate(eggs = recode(eggs, `0`="doesn't lay eggs", `1`="lays Eggs" )) %>%
+  ggplot(aes(animal_type, fill=eggs)) +
+  geom_bar() +
+  scale_fill_manual(values = c("#372F60", "#CA225E")) + 
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+Not so surprisingly there are very few mammals that lay eggs. 
+Let's get the actual count.
+
+```{r cnt-type-eggs, exercise=TRUE}
+zoo %>% 
+  count(___, ___)
+```
+
+```{r cnt-type-eggs-solution}
+zoo %>% 
+  count(animal_type, eggs)
+```
+
+It looks like there is one mammal that lays eggs!
+Can you find the name of that animal?
+
+```{r find-eggs, exercise=TRUE}
+zoo %>%
+  filter(___ == ___) %>%
+  # select relevant columns for a compact view
+  select(animal_name, animal_type, eggs) 
+```
+
+```{r find-eggs-solution, eval=FALSE}
+zoo %>%
+  filter(animal_type == "mammal",
+         eggs == 1) %>%
+  # select relevant columns for a compact view
+  select(animal_name, animal_type, eggs) 
+```
+
+## Correlation matrix
+
+Having some familiarity with the animal kingdom, we would expect that most animals that produce milk do not lay eggs. In other words, we would expect to see a negative correlation between these features.
+
+Let's see how these animal features correlate with each other to get a sense of these relationships.
+
+Run the code to plot the correlation matrix using the [corrr](https://cran.r-project.org/web/packages/corrr/vignettes/using-corrr.html) package. The `correlate()` function generates a correlation matrix in **data frame** format, and `rearrange()` groups highly correlated variables closer together.
+
+```{r corr, exercise=TRUE, message=FALSE, warning=FALSE, error=FALSE}
+library(corrr)
+zoo_corr <- zoo %>%
+  # drop non-numeric columns
+  select(-___, -___) %>%
+  correlate() %>%
+  rearrange()
+zoo_corr
+```
+
+```{r corr-solution}
+library(corrr)
+zoo_corr <- zoo %>%
+  # drop non-numeric columns
+  select(-animal_name, -animal_type) %>%
+  correlate() %>%
+  rearrange()
+zoo_corr
+```
+
+The output is a data frame containing pair-wise correlation coefficients between variables. But it would take us a long time to get an overall sense of these relationships just by looking at raw numbers. Let's plot the correlation matrix to help our brains out. `r emo::ji("brain")`
+
+```{r corr_plot, out.width='100%',exercise=TRUE, message=FALSE, warning=FALSE, error=FALSE}
+zoo_corr %>%
+  rplot(shape = 15, colours = c("#372F60", "white", "#CA225E"), print_cor=TRUE) +
+  theme(axis.text.x = element_text(angle = 20, hjust = .6))
+```
+
+
+So much better! 
+
+We can see that producing eggs or milk have a very strong negative correlation. (The only reason it isn't equal to `-1` is the odd ball platypus.)
+
+Now, see if you can answer the question correctly. 
+
+```{r corr-quiz, echo=FALSE}
+question("What is the pair of animal features that has the strongest _positive_ correlation?",
+         answer("Tail & Backbone"),
+         answer("Fins & Aquatic"),
+         answer("Milk & Hair", correct = TRUE),
+         answer("Feathers & Airborne"),
+         incorrect = "Incorrect. While these two features have a positive correlation it is not the strongest.",
+         allow_retry = TRUE
+         )
 
 ```
 
-### Exercise with Code
 
-*Here's an exercise with some prepopulated code as well as `exercise.lines = 5` to provide a bit more initial room to work.*
+## Principal component analysis
 
-Now write a function that adds any two numbers and then call it:
 
-```{r add-function, exercise=TRUE, exercise.lines = 5}
-add <- function() {
+[Principal component analysis (PCA)](https://en.wikipedia.org/wiki/Principal_component_analysis) is a handy data reduction technique that uses covariance or a correlation matrix of a set of observed variables (just like the one we visualized) and summarizes it with a smaller set of linear combinations called principal components (PC). These components are statistically independent from one another and capture the maximum amount of information (i.e. variance) in the original variables. This means these components can be used to combat large inter-variable correlations in a data set statistical modeling. PCA can also help us explore the similarities between observations and groups they belong to.
+
+Here's the scatter plot with the first two principle components (PC1 and PC2) of the zoo data:
+
+```{r}
+pca_bake %>%
+  ggplot(aes(PC1, PC2, label=animal_name)) +
+  geom_point(aes(color = animal_type), alpha = 0.7, size = 2)+
+  geom_text(check_overlap = TRUE, hjust = "inward") +
+  labs(color = "Animal Type") +
+  theme_minimal()
+```
+
+Each dot on the plot represents an observation (animal) that is colored by the `animal_type` and labeled by `animal_name`. 
+
+Overall, we can see that same type of animals are clustered closely compared to the rest. This suggests that these features (having hair, feathers, or laying eggs etc.) are doing a relatively good job at identifying the clusters within the zoo data.
+
+### Create a recipe
+
+Let's implement principal component analysis (PCA) using [recipes](https://recipes.tidymodels.org/).
+
+First, we initiate our **recipe** with the `zoo` data.
+
+```{r recstart, exercise=TRUE}
+pca_rec <- recipe(~., data = ___) 
+```
+
+```{r recstart-solution}
+pca_rec <- recipe(~., data = zoo) 
+```  
+
+Here, we define two arguments:
+
++ A **formula** with `~.` tells our recipe that we did not define an outcome variable and would like to use all variables for the next steps of the analysis.
+
++ Our data `zoo`. We are using our entire data set here, but typically this would be a _training set_ for predictive modeling.
+
+Once we initiate the recipe, we can keep adding new [roles](https://tidymodels.github.io/recipes/reference/roles.html) and **steps**. 
+
+For example, we already told our recipe to include all variables with our formula; however, we want to exclude identifier column `animal_name` and `animal_type` from our analysis. On the other hand we need these variables later when we are plotting our results. By using `update_role()` we exclude these variables from our analysis **without** completely dropping them in the next steps:
+
+```{r role, exercise=TRUE}
+pca_rec <- recipe(~., data = zoo, ) %>%
+  # update the role for animal_name and animal_type
+  update_role(___, ___, new_role = "id")
+```
+
+```{r role-solution}
+pca_rec <- recipe(~., data = zoo, ) %>%
+  update_role(animal_name, animal_type, new_role = "id")
+```
+
+```{r role-check}
+pca_rec <- recipe(~., data = zoo, ) %>%
+  update_role(animal_name, animal_type, new_role = "id")
+```
+
+Try using `summary` to see the defined roles in `pca_rec` and arrange them by `role` column.
+
+```{r role-sum, exercise=TRUE}
+summary(___) %>%
+  arrange(___)
+```
+
+```{r role-sum-solution}
+summary(pca_rec) %>%
+  arrange(role)
+```
+
+We can see that the role of `animal_name` and `animal_type` is now defined as `id` and the remaining variables are listed as `predictor`. 
+
+Good job! Now, let's add some steps to our recipe.
+
+### Add steps to a recipe
+
+Since PCA is a variance maximizing exercise, it is important to scale variables so their variance is commensurable. We will achieve this by adding two _steps_ to our recipe:   
+
++ `step_scale()` normalizes numeric data to have a standard deviation of one 
++ `step_center()` normalizes numeric data to have a mean of zero.
+
+We can also use the helper function `all_predictors()` to select all the variables that has a role defined as a `predictor`.
+
+```{r step-norm, exercise=TRUE, exercise.lines=6}
+pca_rec <-recipe(~., data = zoo, ) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  # add steps to scale and center
+  step____(all_predictors()) %>%
+  step____(all_predictors())
+```
+
+```{r step-norm-solution}
+pca_rec <-recipe(~., data = zoo, ) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  step_scale(all_predictors()) %>%
+  step_center(all_predictors())
+```
+
+Alternatively, we can accomplish scaling and centering in one single step. Take a look [this group of step functions](https://recipes.tidymodels.org/reference/index.html#section-step-functions-normalization) on the recipes reference page. See if you can answer the question below correctly:
+
+```{r step-quiz, echo=FALSE}
+question("What function can replace both centering and scaling steps?",
+         answer("step_interact"),
+         answer("step_regex"),
+         answer("step_normalize", correct = TRUE),
+         answer("step_date"),
+         incorrect = "Incorrect. Try again.",
+         allow_retry = TRUE
+         )
+```
+
+We are ready to add our final step to compute our principle components!  
+
+Use `step_pca()` to tell the recipe to o convert all variables (except `animal_name` and `animal_type`) into principal components.
+
+```{r pca-step, exercise=TRUE}
+pca_rec <-recipe(~., data = zoo, ) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  step_scale(all_predictors()) %>%
+  step_center(all_predictors()) %>%
+  # add step for PCA computation
+  step____(___, id = "pca")
+
+pca_rec
+```
+
+```{r pca-step-solution}
+pca_rec <-recipe(~., data = zoo, ) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  step_scale(all_predictors()) %>%
+  step_center(all_predictors()) %>%
+  step_pca(all_predictors(), id = "pca")
+```
+
+Did you notice the additional argument `id = "pca"` there? If we take a look at the [`step_pca` help page](https://recipes.tidymodels.org/reference/step_pca.html), we see that this argument allows us to provide a  unique string to identify this step. Providing a step`id` will become handy when we need to extract additional values from that step. Similarly, we could have assigned a unique id to any step we would like to work more on later.
+
+Now, let's print the `pca_rec` by running the following code chunk.
+
+```{r print-rec, exercise=TRUE}
+pca_rec
+```
+
+We can see that `pca_rec` has our _id_ and _predictor_ variables as inputs and the following operations:
+
++ Scaling for all_predictors
++ Centering for all_predictors
++ No PCA components were extracted.
+
+Are you surprised that we haven't extracted the PCA components yet? This is because so far we only _defined_ our recipe, but did not _train_ it. To get the results from our PCA, we need evaluate our recipe using `prep()`. 
+
+### Prep a recipe
+
+Let's prep our recipe and print the output:
   
-}
+```{r pca-prep, exercise=TRUE}
+pca_prep <- prep(___)
+pca_prep
 ```
 
-## Topic 2
-
-### Exercise with Hint
-
-*Here's an exercise where the chunk is pre-evaulated via the `exercise.eval` option (so the user can see the default output we'd like them to customize). We also add a "hint" to the correct solution via the chunk immediate below labeled `print-limit-hint`.*
-
-Modify the following code to limit the number of rows printed to 5:
-
-```{r print-limit, exercise=TRUE, exercise.eval=TRUE}
-mtcars
+```{r pca-prep-solution}
+pca_prep <- prep(pca_rec)
+pca_prep
 ```
 
-```{r print-limit-hint}
-head(mtcars)
+Can you see the difference between the outputs of `pca_rec` and `pca_prep`? After _prepping_ we can see that scaling and centering, and PCA extraction with all columns of interest has been _trained_.
+
+Let's take a look at the steps this recipe contains with `tidy()`:
+
+```{r tidy-prep, exercise=TRUE}
+tidy(___)
 ```
 
-### Quiz
+```{r tidy-prep-solution}
+tidy(pca_prep)
+```
 
-*You can include any number of single or multiple choice questions as a quiz. Use the `question` function to define a question and the `quiz` function for grouping multiple questions together.*
+We can see that three steps are contained in this prepped recipe: 
 
-Some questions to verify that you understand the purposes of various base and recommended R packages:
+1. `scale`  
+1. `center`
+1. `pca` 
 
-```{r quiz}
-quiz(
-  question("Which package contains functions for installing other R packages?",
-    answer("base"),
-    answer("tools"),
-    answer("utils", correct = TRUE),
-    answer("codetools")
-  ),
-  question("Which of the R packages listed below are used to create plots?",
-    answer("lattice", correct = TRUE),
-    answer("tools"),
-    answer("stats"),
-    answer("grid", correct = TRUE)
-  )
+With `tidy()` we can extract the _intermediate values_ computed in each step by providing its `number` as an argument to `tidy()`.
+
+For example, you can extract the mean values for each _predictor_ variable from the second step of our recipe (`center`) using the `tidy` method:
+
+```{r tidy-cen, exercise=TRUE}
+tidy(___, ___)
+```
+
+```{r tidy-cen-solution}
+tidy(pca_prep, 2)
+```
+
+Using the same method, we can also extract the variable _loadings_ for each component from our `step_pca`:
+
+```{r tidy-pca, exercise=TRUE}
+pca_loading <- tidy(___, ___)
+```
+
+```{r tidy-pca-solution}
+pca_loading <- tidy(pca_prep, 3)
+```
+
+##### You can see that these _underlying values_ can be different for each step, but are always called `values` when extracted with the `tidy` method. You can find the definition of these _underlying values_ under the *Value* section in the help page of the related step function. For example, take a look at [`step_scale` help document](https://recipes.tidymodels.org/reference/step_scale.html) and scroll down to see the *Value*.
+
+Alternatively, we can use the `id` argument (the one we specifically provided for this step) and specify the `type` of _underlying value_ we would like to extract.
+
+```{r tidy-pca-id, exercise=TRUE}
+pca_loading <- tidy(___, ___, ___)
+```
+
+```{r tidy-pca-id-solution}
+pca_loading <- tidy(pca_prep, id = "pca", type = "coef")
+```
+
+##### How did we know what to extract? Take a look at the [`step_pca` help document](https://recipes.tidymodels.org/reference/step_pca.html). The `type` argument provides more details about how to use this step with the `tidy()` method.
+
+In the PCA setting, `loadings` indicate the correlation between the principal component and the variable. In other words, large loadings suggest that a variable has a strong effect on that principal component.
+
+Let's take a look at loadings we generated with the zoo data for the first four principle components and top six variables with largest variable loadings. Here, we plot the absolute values of the loadings to easily compare them, and color it by the direction of the loading (positive or negative):
+
+```{r load-plot, echo=FALSE}
+prin_comps <- c("PC1", "PC2", "PC3", "PC4")
+num_loads <- 6
+
+load_plot <- pca_loading %>%
+  filter(component %in% prin_comps) %>%
+  mutate(abs_load = abs(value),
+         direction = value > 0) %>%
+  group_by(component) %>%
+  top_n(num_loads, abs_load) %>%
+  ungroup()
+
+## Now let's plot!
+
+library(tidytext)
+
+load_plot %>%
+  mutate(terms = tidytext::reorder_within(terms, abs_load, component)) %>%
+  ggplot(aes(abs_load, terms, fill = value > 0)) +
+  geom_col() +
+  facet_wrap(~component, scales = "free_y") +
+  tidytext::scale_y_reordered() +
+  scale_fill_manual(values = c("#372F60", "#CA225E")) +
+  labs(
+    x = "Absolute value of contribution",
+    y = NULL, fill = "Positive?"
+  ) +
+  theme_minimal()  
+```
+
+It looks like PC1 (first principal component) is mostly about producing milk or eggs, and having hair. Notice the loading direction for milk and hair are the same, which is the opposite of eggs. Do you remember the strongest positive correlation we found? On the other hand, PC2 seems to be about the animal having a fin or being aquatic, both of which have the opposite direction to breathing. Both tails and feathers have a strong correlation with PC3, and finally, PC4 is mostly about being domestic or a predator, which have opposite directions. Overall, we can say that PC1 is mostly about being a _mammal_, PC2 is being a _fish_ or an _aquatic animal_, PC3 is being a _bird_, and PC4 is about being domesticated.
+
+Now that we have an idea about variable loadings, let's talk about how we made this plot. Just like anything in life, we first need to get our data ready.  
+
+1. To keep our plot simple, we looked at the loadings for the first four principle components and top six variables with largest absolute loadings. For that, we assign the principal components we would like to plot to `prin_comps` and number of loadings you would like to show to `num_loads`. Feel free to change what goes into these variables to plot more or less information.  
+
+1. We will add two new columns to `pca_loading` before plotting them:
+
+    + Column `abs_load` will contain the absolute values of the loadings.
+    + Column `direction` will inform us of their direction in relation to the principal component. 
+
+1. Then we will use two functions from the [tidytext](https://github.com/juliasilge/tidytext) package: `reorder_within()` and `scale_y_reordered()` to order our bar plot neatly within facets.  
+
+```{r pc-cont, exercise=TRUE, exercise.lines=30}
+prin_comps <- c("PC1", "PC2", "PC3", "PC4")
+num_loads <- 6
+
+load_plot <- pca_loading %>%
+  filter(component %in% prin_comps) %>%
+  mutate(abs_load = abs(value),
+         direction = value > 0) %>%
+  group_by(component) %>%
+  top_n(num_loads, abs_load) %>%
+  ungroup() 
+
+head(load_plot, 3)
+
+## Now let's plot!
+
+library(tidytext)
+
+load_plot %>%
+  mutate(terms = tidytext::reorder_within(terms, abs_load, component)) %>%
+  ggplot(aes(abs_load, terms, fill = direction)) +
+  geom_col() +
+  facet_wrap(~component, scales = "free_y") +
+  tidytext::scale_y_reordered() +
+  scale_fill_manual(values = c("#372F60", "#CA225E")) +
+  labs(
+    x = "Absolute value of contribution",
+    y = NULL, fill = "Positive?"
+  ) +
+  theme_minimal()  
+```  
+  
+Good job!
+
+### Bake a recipe
+
+So far we:
+
+1. Defined preprocessing operations with `recipe`   
+1. Trained our recipe with `prep` 
+
+Finally, in order to apply these computations to our data and extract the principal components, we will use `bake` by providing two arguments:
+
+1. A prepped (trained) recipe  
+1. The data we would like to apply these computations to
+
+```{r bake, exercise=TRUE}
+pca_bake <- bake(___, ___)
+pca_bake
+```
+
+```{r bake-solution}
+pca_bake <- bake(pca_prep, zoo)
+pca_bake
+```
+
+Now that we got our principal components, we are ready to plot them! `r emo::ji("tada")`
+
+Let's plot the first two principal components, while labeling our points with `animal_name` and coloring them by `animal_type`.
+
+```{r pca-plot, exercise=TRUE}
+pca_bake %>%
+  ggplot(aes(___, ___, label=___)) +
+  geom_point(aes(color = ___), alpha = 0.7, size = 2)+
+  geom_text(check_overlap = TRUE, hjust = "inward") +
+  labs(color = NULL) +
+  theme_minimal()
+```
+
+```{r pca-plot-solution}
+pca_bake %>%
+  ggplot(aes(PC1, PC2, label=animal_name)) +
+  geom_point(aes(color = animal_type), alpha = 0.7, size = 2)+
+  geom_text(check_overlap = TRUE, hjust = "inward") +
+  labs(color = NULL) +
+  theme_minimal()
+```
+
+We were able reproduce our initial plot! Let's take a look at our plot in more detail.
+
+Look at _mammals_, majority of these animals are separated from the other types of animals across the PC1 axis. Recall our plot with loadings: `milk` and `eggs` were the top two features with largest loadings for PC1. Interestingly, platypus (our favorite odd ball) is placed closer to _reptiles_ and the penguin on the PC1 axis. This is likely driven by laying eggs and not having teeth. On the other hand, seal and especially dolphin are located closer to _fish_ and the sea snake, and separate from rest of the mammals on the PC2 axis. Do you remember the top two loadings for PC2? It was `fins` and `aquatic`! Do you see the pattern here? 
+
+A common practice when conducting PCA is to check how much variability in the data is captured by principal components. Typically, this is achieved by looking at the eigenvalues or their percent proportion for each component. Let's extract variance explained by each principal component using the `tidy()` method.
+
+```{r var-exp1, exercise=TRUE}
+pca_variances <- tidy(pca_prep, id = "pca", type = "variance")
+pca_variances
+```
+
+```{r var-exp1-solution}
+pca_variances <- tidy(pca_prep, id = "pca", type = "variance")
+pca_variances
+```
+
+When we take a close look at the `terms` column of `pca_variances`, we see that various variance calculations are available for our 16 principal components.
+
+```{r var-exp2, exercise=TRUE}
+pca_variances %>%
+  count(___)
+```
+
+```{r var-exp2-solution}
+pca_variances %>%
+  count(terms)
+```
+
+Now, let's plot them to help our brains out once more:
+
+```{r var-plot, exercise=TRUE}
+pca_variances %>%
+  filter(terms == "percent variance") %>%
+  ggplot(aes(___, ___)) +
+  geom_col(fill="#372F60") +
+  scale_y_continuous() +
+  labs(x = NULL, y = "Percent variance explained by each PCA component") +
+  theme_minimal()
+```
+
+```{r var-plot-solution}
+pca_variances %>%
+  filter(terms == "percent variance") %>%
+  ggplot(aes(component, value)) +
+  geom_col(fill="#372F60") +
+  labs(x = NULL, y = "Percent variance explained by each PCA component") +
+  theme_minimal()
+```
+
+We can see that first three principal components explain majority of the variance in the data. But it is difficult to see the cumulative variance explained in this plot. Let's tweak the `filter()` function to plot the cumulative variance explained:
+
+```{r cum-var-plot, exercise=TRUE}
+pca_variances %>%
+  filter(terms == "___") %>%
+  ggplot(aes(___, ___)) +
+  geom_col(fill="#372F60") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = NULL, y = "Cumulative percent of variance explained by each PCA component") +
+  theme_minimal()
+```
+
+```{r cum-var-plot-solution}
+exp_var %>%
+  filter(terms == "cumulative percent variance") %>%
+  ggplot(aes(component, cum_var)) +
+  geom_col(fill="#372F60") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(x = NULL, y = "Cumulative percent of variance explained by each PCA component") +
+  theme_minimal()
+```
+
+We can see that 50% of the variance is explained by the first two components. If we were to use more components, we can capture even more variance in the data. That is why it is also common to plot multiple components to get a better idea of the data.
+
+Try plotting PC1 and PC3, do you see other clusters in the data that wasn't as obvious with PC1 and PC2?
+
+```{r pca3-plot, exercise=TRUE}
+pca_bake %>%
+  ggplot(aes(___, ___, label=___)) +
+  geom_point(aes(color = ___), alpha = 0.7, size = 2)+
+  geom_text(check_overlap = TRUE, hjust = "inward") +
+  labs(color = NULL) +
+  theme_minimal()
+```
+
+```{r pca3-plot-solution}
+pca_bake %>%
+  ggplot(aes(PC1, PC3, label=animal_name)) +
+  geom_point(aes(color = animal_type), alpha = 0.7, size = 2)+
+  geom_text(check_overlap = TRUE, hjust = "inward") +
+  labs(color = NULL) +
+  theme_minimal()
+```
+
+## UMAP
+
+[Uniform manifold approximation and projection (UMAP)](https://umap-learn.readthedocs.io/en/latest/how_umap_works.html) is a _non-linear_ graph based dimension reduction algorithm. It finds local, low dimensional representations of the data and can be run unsupervised or supervised with different types of outcome data (e.g. numeric, factor, etc). 
+
+Some of the advantages of using UMAP are:
+
++ Can capture non-linear relationships in the data     
++ Can handle large, high-dimensional data sets   
++ Has a much shorter computation time than other non-linear graph based dimension reduction algorithms (e.g. t-SNE)   
++ Is able to represent not only within cluster similarities but also global relationships  
++ Can be used as a general-purpose dimensionality reduction technique for data preprocessing prior to modeling 
+
+Now that we learned how to create a recipe for PCA, we can apply our knowledge to create one for UMAP with `zoo` data too! 
+
+```{r umap-sort}
+umap_ord <- c(
+  "recipe(~., data = zoo) %>%",
+  "update_role(animal_name, animal_type, new_role = \"id\") %>%",
+  "step_normalize(all_predictors()) %>%",
+  "step_umap(all_predictors())"
 )
+
+question_rank(
+  "Sort the following recipe steps to create a recipe with UMAP:",
+  answer(umap_ord, correct = TRUE),
+  allow_retry = TRUE
+)
+
 ```
+
+Fill in the blanks to create a recipe with UMAP, then prep and bake the recipe to compute UMAP components:
+
+```{r umap-try, exercise=TRUE, exercise.lines=16}
+set.seed(123) # set a seed to reproduce random number generation
+library(embed) # load the library to use `step_umap()`  
+
+## Create the recipe accordingly
+umap_rec <- recipe(~., data = ___) %>%
+  update____(___, ___, new_role = "id") %>%
+  step_normalize(___) %>%
+  step___(___)
+
+## Train your recipe with prep
+umap_prep <- prep(___)
+
+## Apply computations with bake
+umap_bake <- bake(___, ___)
+umap_bake
+```
+
+```{r umap-try-solution}
+set.seed(123) # set a seed to reproduce random number generation
+library(embed) # load the library to use `step_umap()`  
+
+## Create the recipe accordingly
+umap_rec <- recipe(~., data = zoo) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  step_normalize(all_predictors()) %>%
+  step_umap(all_predictors())
+
+## Prep your recipe
+umap_prep <- prep(umap_rec)
+
+## Extract UMAP components with bake
+umap_bake <- bake(umap_prep, zoo)
+umap_bake
+```
+
+Great job!
+
+It's time to plot our UMAP components! `r emo::ji("tada")`
+
+```{r umap-plot, exercise=TRUE}
+umap_bake %>%
+  ggplot(aes(___, ___, label=animal_name)) +
+  geom_point(aes(color = animal_type), alpha = 0.7, size = 2)+
+  geom_text(check_overlap = TRUE, hjust = "inward") +
+  labs(color = NULL) +
+  theme_minimal()
+```
+
+```{r umap-plot-solution}
+umap_bake %>%
+  ggplot(aes(umap_1, umap_2, label=animal_name)) +
+  geom_point(aes(color = animal_type), alpha = 0.7, size = 2)+
+  geom_text(check_overlap = TRUE, hjust = "inward") +
+  labs(color = NULL) +
+  theme_minimal()
+```
+
+Do you think UMAP is doing a better job than PCA?
+
+### UMAP hyperparameters
+
+UMAP algorithm has multiple hyperparameters that can have significant impact on the results. The four major hyperparameters are:
+
++ `neighbors`   
++ `num_comp`  
++ `min_dist`  
++ `learn_rate`
+
+These hyperparameters can be specified in the `step_umap` function. You can find more details in [`step_umap` help document](https://embed.tidymodels.org/reference/step_umap.html) and additional explanations on hyperparameters [here](https://umap-learn.readthedocs.io/en/latest/parameters.html).
+
+Try setting `num_comp` (number of components) to `3` and plot UMAP components again, but this time use the first and the third components:
+
+```{r umap-par, exercise=TRUE, exercise.lines=25}
+set.seed(123) # set a seed to reproduce random number generation
+library(embed) # load the library to use `step_umap()`  
+
+## Create the recipe accordingly
+umap_rec <- recipe(~., data = zoo) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  step_normalize(all_predictors()) %>%
+  step_umap(all_predictors(), ___ = ___)
+
+## Prep your recipe
+umap_prep <- prep(umap_rec)
+
+## Extract UMAP components with bake
+umap_bake <- bake(umap_prep, zoo)
+
+## Plot UMAP components
+umap_bake %>%
+  ggplot(aes(___, ___, label=animal_name)) +
+  geom_point(aes(color = animal_type), alpha = 0.7, size = 2)+
+  geom_text(check_overlap = TRUE, hjust = "inward") +
+  labs(color = NULL) +
+  theme_minimal()
+```
+
+```{r umap-par-solution}
+set.seed(123) # set a seed to reproduce random number generation
+library(embed) # load the library to use `step_umap()`  
+
+## Create the recipe accordingly
+umap_rec <- recipe(~., data = zoo) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  step_normalize(all_predictors()) %>%
+  step_umap(all_predictors(), num_comp = 3)
+
+## Prep your recipe
+umap_prep <- prep(umap_rec)
+
+## Extract UMAP components with bake
+umap_bake <- bake(umap_prep, zoo)
+
+## Plot UMAP components
+umap_bake %>%
+  ggplot(aes(umap_1, umap_3, label=animal_name)) +
+  geom_point(aes(color = animal_type), alpha = 0.7, size = 2)+
+  geom_text(check_overlap = TRUE, hjust = "inward") +
+  labs(color = NULL) +
+  theme_minimal()
+```
+
+Looks like increasing the number of UMAP components did not change our results that much. Try other hyperparameters and see if you can produce different plots. Just don't forget to modify the plot accordingly.
+
+## Bake vs juice
+
+Throughout this tutorial, we used `bake` to apply the computations from a _trained recipe_ to our data set. The `bake` method is great because it allows us to apply a set specifications and computations generated with `prep` to our data of choice. This is especially handy when you are dealing with training, validation, or test sets during your modeling process. 
+
+However, if we simply want to extract the computations generated with `prep()` and don't need to reapply them to a new data set, we can simply use `juice`. For example, throughout this tutorial, we only worked with the `zoo` data and could have easily extracted our principal components with `juice(pca_prep)`.
+
+Let's create our recipe, add steps and train with `prep` one last time. Then extract principal components first with  `bake` and then with `juice`.
+
+```{r juice-1, exercise=TRUE}
+zoo_rec <- recipe(data = zoo, formula = ~.) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  step_normalize(all_predictors()) %>%
+  step_pca(all_predictors())
+
+zoo_prep <- prep(pca_rec)
+
+# bake
+bake(___, ___)
+```
+
+
+```{r juice-1-solution}
+zoo_rec <- recipe(data = zoo, formula = ~.) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  step_normalize(all_predictors()) %>%
+  step_pca(all_predictors())
+
+zoo_prep <- prep(zoo_rec)
+
+# bake
+bake(zoo_prep, zoo)
+```
+
+Now, let's juice! `r emo::ji("juice")` 
+
+```{r juice-2, exercise = TRUE}
+# juice
+juice(___)
+```
+
+```{r juice-2-solution}
+# juice
+juice(zoo_prep)
+```
+
+Do you see any difference in the output between bake or juice? If you do it's probably your imagination, because there's no difference between the two. 
+
+
+<!-- ## Final quiz -->
+
+<!-- Phew! We covered a lot material here! -->
+<!-- Do you think you could explain what you learned today to your parents, a friend, or a significant other if you had to? -->
+
+<!-- See if you can complete the quiz below too see how much learned: -->
+
+<!-- ```{r where-am-i, echo=FALSE} -->
+<!-- question("In the tidymodels ecosystem, recipes is the package that deals with", -->
+<!--   answer("Data preprocessing and/or feature engineering", correct = TRUE), -->
+<!--   answer("Fitting models"), -->
+<!--   answer("Tuning model hyperparameters", correct = TRUE), -->
+<!--   answer("Data resampling", correct = TRUE), -->
+<!--   incorrect = "Incorrect. There are packages within the tidymodels that help with that, but not the recipes package.") -->
+<!-- ) -->
+<!-- ``` -->

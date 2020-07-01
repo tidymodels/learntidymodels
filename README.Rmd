@@ -30,9 +30,26 @@ For now, you can install the development version from [GitHub](https://github.co
 # install.packages("devtools")
 devtools::install_github("tidymodels/learntidymodels")
 ```
-## Example
+## How to run the tutorials
 
-How to run the tutorials...
+You can easily start any tutorial with:
+
+``` r
+learnr::run_tutorial("tutorial_of_choice", package = "learntidymodels")
+```
+
+For example:
+
+``` r
+learnr::run_tutorial("pca_recipe", package = "learntidymodels")
+```
+
+## List of available tutorials
+
+```{r, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE}
+knitr::kable(readr::read_tsv("inst/tutorial_list.tsv"))
+```
+
 
 ## Code of Conduct
   

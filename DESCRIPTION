@@ -36,7 +36,4 @@ Remotes:
 Depends: 
     tidyverse,
     tidymodels,
-    palmerpenguins,
-    embed,
-    corrr
-    
+    palmerpenguins

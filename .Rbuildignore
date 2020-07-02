@@ -5,5 +5,4 @@
 ^\.github$
 ^cran-comments\.md$
 ^LICENSE\.md$
-^inst/tutorials$
 ^inst/.tsv$

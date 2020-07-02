@@ -27,7 +27,9 @@ Imports:
     learnr (>= 0.10.1),
     gradethis,
     sortable (>= 0.4.2),
-    emo (>= 0.0.0.9000)
+    emo (>= 0.0.0.9000),
+    embed,
+    corrr
 Remotes:
     allisonhorst/palmerpenguins,
     rstudio-education/gradethis,

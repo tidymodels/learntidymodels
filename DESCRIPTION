@@ -24,7 +24,7 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
-    learnr,
+    learnr (>= 0.10.1),
     gradethis,
     sortable (>= 0.4.2),
     emo (>= 0.0.0.9000)

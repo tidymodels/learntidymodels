@@ -39,9 +39,9 @@ learnr::run_tutorial("pca-recipes", package = "learntidymodels")
 
 ## List of available tutorials
 
-| Tutorial     | Description                                                                                     |
-| :----------- | :---------------------------------------------------------------------------------------------- |
-| `pca_recipe` | Learn how to conduct dimensionality reduction algorithms using recipes package from tidymodels. |
+| Tutorial      | Description                                                                                     |
+| :------------ | :---------------------------------------------------------------------------------------------- |
+| `pca-recipes` | Learn how to conduct dimensionality reduction algorithms using recipes package from tidymodels. |
 
 ## Code of Conduct
 

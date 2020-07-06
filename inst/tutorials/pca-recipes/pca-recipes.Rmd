@@ -11,10 +11,8 @@ runtime: shiny_prerendered
 
 ```{r setup, include=FALSE, message=FALSE}
 library(learnr)
-library(ggplot2)
-library(readr)
-library(dplyr)
-library(recipes)
+library(tidyverse)
+library(tidymodels)
 library(embed)
 library(corrr)
 library(tidytext)
@@ -140,7 +138,7 @@ zoo
 Alternatively, use `glimpse()` from the [dplyr](https://dplyr.tidyverse.org/) package to see columns in a more compact way. You can click on the **Solution** button to get help.
 
 ```{r glimpse-zoo, exercise=TRUE, warning=FALSE, message=FALSE, error=FALSE}
-library(dplyr)
+library(tidyverse)
 glimpse(___)
 ```
 
@@ -327,7 +325,7 @@ Let's implement principal component analysis (PCA) using [recipes](https://recip
 First, we initiate our **recipe** with the `zoo` data.
 
 ```{r recstart, exercise=TRUE}
-library(recipes)
+library(tidymodels)
 pca_rec <- recipe(~., data = ___) 
 ```
 

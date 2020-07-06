@@ -6,4 +6,6 @@
 ^cran-comments\.md$
 ^LICENSE\.md$
 ^inst/.tsv$
-^inst/.Rmd$
+^inst/tutorials/multinomial-penguins/multinomial-penguins\.Rmd$
+^inst/tutorials/pca-recipes/pca-recipes\.Rmd$
+

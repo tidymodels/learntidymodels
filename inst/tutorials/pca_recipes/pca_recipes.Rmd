@@ -268,7 +268,7 @@ zoo_corr <- zoo %>%
 zoo_corr
 ```
 
-The output is a data frame containing pair-wise correlation coefficients between variables. But it would take us a long time to get an overall sense of these relationships just by looking at raw numbers. Let's plot the correlation matrix with [`corrr::rplot`](https://corrr.tidymodels.org/reference/rplot.html) to help our brains out. `r emo::ji("brain")`
+The output is a data frame containing pair-wise correlation coefficients between variables. But it would take us a long time to get an overall sense of these relationships just by looking at raw numbers. Let's plot the correlation matrix with [`corrr::rplot`](https://corrr.tidymodels.org/reference/rplot.html) to help our brains out.
 
 ```{r corr_plot, out.width='100%',exercise=TRUE, message=FALSE, warning=FALSE, error=FALSE}
 zoo_corr %>%
@@ -622,7 +622,7 @@ pca_bake <- bake(pca_prep, zoo)
 pca_bake
 ```
 
-Now that we got our principal components, we are ready to plot them! `r emo::ji("tada")`
+Now that we got our principal components, we are ready to plot them! `r emojifont::emoji('tada')`
 
 Let's plot the first two principal components, while labeling our points with `animal_name` and coloring them by `animal_type`.
 
@@ -808,7 +808,7 @@ umap_bake
 
 Great job!
 
-It's time to plot our UMAP components! `r emo::ji("tada")`
+It's time to plot our UMAP components! `r emojifont::emoji('tada')`
 
 ```{r umap-plot, exercise=TRUE}
 umap_bake %>%
@@ -897,7 +897,7 @@ Looks like increasing the number of UMAP components did not change our results t
 
 ## Bake vs juice
 
-Good job! You completed all the steps and applied dimensionality reduction to the `zoo` data set using the [recipes](https://recipes.tidymodels.org/) package from tidymodels! `r emo::ji("winner")` But before you start your victory lap, let's go over what we learned one last time.
+Good job! You completed all the steps and applied dimensionality reduction to the `zoo` data set using the [recipes](https://recipes.tidymodels.org/) package from tidymodels! `r emojifont::emoji('star2')` But before you start your victory lap, let's go over what we learned one last time.
 
 To implement dimensionality reduction with the [recipes](https://recipes.tidymodels.org/) package, we took the following steps:
 
@@ -946,7 +946,7 @@ zoo_bake <- bake(zoo_prep, zoo)
 zoo_bake
 ```
 
-Now, let's juice! `r emo::ji("juice")` 
+Now, let's juice! `r emojifont::emoji('tropical_drink')`
 
 ```{r juice-2, exercise = TRUE}
 # juice
@@ -972,7 +972,7 @@ all.equal(zoo_bake, zoo_juice)
 
 ## Final words
 
-Congratulations! You've completed the tutorial! It's time for your victory lap! `r emo::ji_glue(":victory::runner:")`
+Congratulations! You've completed the tutorial! It's time for your victory lap! `r emojifont::emoji('runner')`
 
 Equipped with the necessary know-how, you are now ready to apply these tools in the wild. If you ever face obstacles on your journey, don't forget to check out the following resources:
 

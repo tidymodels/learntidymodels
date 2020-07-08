@@ -27,13 +27,12 @@ Imports:
     learnr,
     gradethis,
     sortable,
-    emo,
     embed,
-    corrr
+    corrr,
+    emojifont
 Remotes:
     allisonhorst/palmerpenguins,
     rstudio-education/gradethis,
-    hadley/emo,
     tidymodels/embed
 Depends: 
     tidyverse,

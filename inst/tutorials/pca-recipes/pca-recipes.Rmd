@@ -11,9 +11,8 @@ runtime: shiny_prerendered
 
 ```{r setup, include=FALSE, message=FALSE}
 library(learnr)
-library(knitr)
 library(tidyverse)
-library(recipes)
+library(tidymodels)
 library(embed)
 library(corrr)
 library(tidytext)
@@ -59,14 +58,14 @@ pca_variances <- tidy(pca_prep, id = "pca", type = "variance")
 
 pca_bake <- bake(pca_prep, zoo)
 
-
 zoo_rec <- recipe(data = zoo, formula = ~.) %>%
   update_role(animal_name, animal_type, new_role = "id") %>%
   step_normalize(all_predictors()) %>%
   step_pca(all_predictors())
 
 zoo_prep <- prep(pca_rec)
-
+zoo_bake <- pca_bake
+zoo_juice <- juice(zoo_prep)
 
 ### UMAP ###
 set.seed(123) 
@@ -136,7 +135,7 @@ zoo
 ```
 
 
-Alternatively, use `glimpse()` from the [tidyverse](https://www.tidyverse.org/) metapackage to see columns in a more compact way. You can click on the **Solution** button to get help.
+Alternatively, use `glimpse()` from the [dplyr](https://dplyr.tidyverse.org/) package to see columns in a more compact way. You can click on the **Solution** button to get help.
 
 ```{r glimpse-zoo, exercise=TRUE, warning=FALSE, message=FALSE, error=FALSE}
 library(tidyverse)
@@ -238,15 +237,23 @@ Having some familiarity with the animal kingdom, we would expect that most anima
 
 Let's see how these animal features correlate with each other to get a sense of these relationships.
 
-Run the code to plot the correlation matrix using the [corrr](https://cran.r-project.org/web/packages/corrr/vignettes/using-corrr.html) package. The `correlate()` function generates a correlation matrix in **data frame** format, and `rearrange()` groups highly correlated variables closer together.
+Run the code to plot the correlation matrix using the [corrr](https://corrr.tidymodels.org/index.html) package. 
+
+Here we are using three functions from the corrr package:
+
+- `correlate()` generates a correlation matrix in **data frame** format.  
+- `rearrange()` groups highly correlated variables closer together.   
+- `shave()` shaves off the upper triangle of a correlation data frame by converting its cells to `NA`.
 
 ```{r corr, exercise=TRUE, message=FALSE, warning=FALSE, error=FALSE}
 library(corrr)
 zoo_corr <- zoo %>%
   # drop non-numeric columns
-  select(-___, -___) %>%
+  select(___, ___) %>%
   correlate() %>%
-  rearrange()
+  rearrange() %>%
+  shave()
+
 zoo_corr
 ```
 
@@ -256,22 +263,25 @@ zoo_corr <- zoo %>%
   # drop non-numeric columns
   select(-animal_name, -animal_type) %>%
   correlate() %>%
-  rearrange()
+  rearrange() %>%
+  shave() 
 zoo_corr
 ```
 
-The output is a data frame containing pair-wise correlation coefficients between variables. But it would take us a long time to get an overall sense of these relationships just by looking at raw numbers. Let's plot the correlation matrix to help our brains out. `r emo::ji("brain")`
+The output is a data frame containing pair-wise correlation coefficients between variables. But it would take us a long time to get an overall sense of these relationships just by looking at raw numbers. Let's plot the correlation matrix with [`corrr::rplot`](https://corrr.tidymodels.org/reference/rplot.html) to help our brains out. `r emo::ji("brain")`
 
 ```{r corr_plot, out.width='100%',exercise=TRUE, message=FALSE, warning=FALSE, error=FALSE}
 zoo_corr %>%
-  rplot(shape = 15, colours = c("#372F60", "white", "#CA225E"), print_cor=TRUE) +
+  rplot(shape = 15, colours = c("#372F60", "white", "#CA225E"), print_cor=TRUE) -> g
   theme(axis.text.x = element_text(angle = 20, hjust = .6))
 ```
 
 
+##### The [`corrr::rplot`](https://corrr.tidymodels.org/reference/rplot.html) is quite handy because it returns a ggplot object, which can be further customized with [ggplot2](https://ggplot2.tidyverse.org/) functions.
+
 So much better! 
 
-We can see that producing eggs or milk have a very strong negative correlation. (The only reason it isn't equal to `-1` is the odd ball platypus.)
+We can see that producing eggs or milk have a very strong negative correlation. (The odd ball platypus is one reason why it isn't equal to `-1`.)
 
 Now, see if you can answer the question correctly. 
 
@@ -315,6 +325,7 @@ Let's implement principal component analysis (PCA) using [recipes](https://recip
 First, we initiate our **recipe** with the `zoo` data.
 
 ```{r recstart, exercise=TRUE}
+library(tidymodels)
 pca_rec <- recipe(~., data = ___) 
 ```
 
@@ -616,6 +627,8 @@ Now that we got our principal components, we are ready to plot them! `r emo::ji(
 Let's plot the first two principal components, while labeling our points with `animal_name` and coloring them by `animal_type`.
 
 ```{r pca-plot, exercise=TRUE}
+library(ggplot2)
+
 pca_bake %>%
   ggplot(aes(___, ___, label=___)) +
   geom_point(aes(color = ___), alpha = 0.7, size = 2)+
@@ -669,7 +682,7 @@ pca_variances %>%
   ggplot(aes(___, ___)) +
   geom_col(fill="#372F60") +
   scale_y_continuous() +
-  labs(x = NULL, y = "Percent variance explained by each PCA component") +
+  labs(x = "Principal Components", y = "Variance explained (%)") +
   theme_minimal()
 ```
 
@@ -678,7 +691,7 @@ pca_variances %>%
   filter(terms == "percent variance") %>%
   ggplot(aes(component, value)) +
   geom_col(fill="#372F60") +
-  labs(x = NULL, y = "Percent variance explained by each PCA component") +
+  labs(x = "Principal Components", y = "Variance explained (%)") +
   theme_minimal()
 ```
 
@@ -689,18 +702,17 @@ pca_variances %>%
   filter(terms == "___") %>%
   ggplot(aes(___, ___)) +
   geom_col(fill="#372F60") +
-  scale_y_continuous(labels = scales::percent_format()) +
-  labs(x = NULL, y = "Cumulative percent of variance explained by each PCA component") +
+  scale_y_continuous() +
+  labs(x = "Principal Components", y = "Cumulative variance explained (%)") +
   theme_minimal()
 ```
 
 ```{r cum-var-plot-solution}
-exp_var %>%
+pca_variances %>%
   filter(terms == "cumulative percent variance") %>%
-  ggplot(aes(component, cum_var)) +
+  ggplot(aes(component, value)) +
   geom_col(fill="#372F60") +
-  scale_y_continuous(labels = scales::percent_format()) +
-  labs(x = NULL, y = "Cumulative percent of variance explained by each PCA component") +
+  labs(x = "Principal Components", y = "Cumulative variance explained (%)") +
   theme_minimal()
 ```
 
@@ -881,9 +893,25 @@ umap_bake %>%
   theme_minimal()
 ```
 
-Looks like increasing the number of UMAP components did not change our results that much. Try other hyperparameters and see if you can produce different plots. Just don't forget to modify the plot accordingly.
+Looks like increasing the number of UMAP components did not change our results that much. Try other hyperparameters and see if you can produce different plots. Don't forget to modify the plot accordingly! 
 
 ## Bake vs juice
+
+Good job! You completed all the steps and applied dimensionality reduction to the `zoo` data set using the [recipes](https://recipes.tidymodels.org/) package from tidymodels! `r emo::ji("winner")` But before you start your victory lap, let's go over what we learned one last time.
+
+To implement dimensionality reduction with the [recipes](https://recipes.tidymodels.org/) package, we took the following steps:
+
+1. Create a recipe using a data set and formula with `recipe()`       
+1. Update variable roles with `update_role()`   
+1. Define pre-processing steps with `step_*()`
+1. Train pre-processing steps with `prep()`
+1. Apply computations and extract pre-processed data with `bake()`
+
+
+```{r recipe-img, fig.cap="Illustration by [Allison Horst](https://github.com/allisonhorst/stats-illustrations)", out.width='96%', fig.align='center'}
+knitr::include_graphics("https://github.com/allisonhorst/stats-illustrations/raw/master/rstats-artwork/recipes.png")
+```
+
 
 Throughout this tutorial, we used `bake` to apply the computations from a _trained recipe_ to our data set. The `bake` method is great because it allows us to apply a set specifications and computations generated with `prep` to our data of choice. This is especially handy when you are dealing with training, validation, or test sets during your modeling process. 
 
@@ -900,7 +928,8 @@ zoo_rec <- recipe(data = zoo, formula = ~.) %>%
 zoo_prep <- prep(pca_rec)
 
 # bake
-bake(___, ___)
+zoo_bake <- bake(___, ___)
+zoo_bake
 ```
 
 
@@ -913,22 +942,51 @@ zoo_rec <- recipe(data = zoo, formula = ~.) %>%
 zoo_prep <- prep(zoo_rec)
 
 # bake
-bake(zoo_prep, zoo)
+zoo_bake <- bake(zoo_prep, zoo)
+zoo_bake
 ```
 
 Now, let's juice! `r emo::ji("juice")` 
 
 ```{r juice-2, exercise = TRUE}
 # juice
-juice(___)
+zoo_juice <- juice(___)
+zoo_juice
 ```
 
 ```{r juice-2-solution}
 # juice
-juice(zoo_prep)
+zoo_juice <- juice(zoo_prep)
+zoo_juice
 ```
 
-Do you see any difference in the output between bake or juice? If you do it's probably your imagination, because there's no difference between the two. 
+Do you see any difference in the output between bake or juice? Let's compare them with base R function `all.equal()`, which simply returns `TRUE` if the compared objects are identical:
+
+```{r comp-juice-bake, exercise = TRUE}
+all.equal(___, ___)
+```
+
+```{r comp-juice-bake-solution}
+all.equal(zoo_bake, zoo_juice)
+```
+
+## Final words
+
+Congratulations! You've completed the tutorial! It's time for your victory lap! `r emo::ji_glue(":victory::runner:")`
+
+Equipped with the necessary know-how, you are now ready to apply these tools in the wild. If you ever face obstacles on your journey, don't forget to check out the following resources:
+
++ The [recipes main page](https://recipes.tidymodels.org/)   
+  Introduction to recipes package and additional examples.
+  
++ The [recipes reference page](https://recipes.tidymodels.org/reference/index.html)   
+  A list of all available recipes functions and their help documents in a neatly categorized layout.   
+  
++ The [search table for recipes steps](https://www.tidymodels.org/find/recipes/)   
+  Search and find available recipes steps for pre-processing.
+
++ Ask about it in [RStudio Community](https://community.rstudio.com/c/ml/15)
+
 
 
 <!-- ## Final quiz -->

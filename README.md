@@ -28,20 +28,20 @@ devtools::install_github("tidymodels/learntidymodels")
 You can easily start any tutorial with:
 
 ``` r
-learnr::run_tutorial("tutorial_of_choice", package = "learntidymodels")
+learnr::run_tutorial("tutorial-of-choice", package = "learntidymodels")
 ```
 
 For example:
 
 ``` r
-learnr::run_tutorial("pca_recipe", package = "learntidymodels")
+learnr::run_tutorial("pca-recipes", package = "learntidymodels")
 ```
 
 ## List of available tutorials
 
-| Tutorial     | Description                                                                                     |
-| :----------- | :---------------------------------------------------------------------------------------------- |
-| `pca_recipe` | Learn how to conduct dimensionality reduction algorithms using recipes package from tidymodels. |
+| Tutorial      | Description                                                                                     |
+| :------------ | :---------------------------------------------------------------------------------------------- |
+| `pca-recipes` | Learn how to conduct dimensionality reduction algorithms using recipes package from tidymodels. |
 
 ## Code of Conduct
 

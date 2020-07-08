@@ -25,22 +25,17 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
     learnr,
-    corrr,
-    embed,
     gradethis,
     sortable,
-    recipes,
-    parsnip,
-    broom,
-    tune,
-    rsample,
-    ggplot2,
-    tidyr,
-    palmerpenguins,
-    readr,
-    emo
+    emo,
+    embed,
+    corrr
 Remotes:
     allisonhorst/palmerpenguins,
     rstudio-education/gradethis,
     hadley/emo,
     tidymodels/embed
+Depends: 
+    tidyverse,
+    tidymodels,
+    palmerpenguins

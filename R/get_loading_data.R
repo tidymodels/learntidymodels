@@ -40,24 +40,24 @@
 #'
 #' train_pca <- prep(train_pca)
 #'
-#' get_component_data(train_pca, component_number <= 3)
+#' get_loading_data(train_pca, component_number <= 3)
 #'
-#' get_component_data(train_pca, component_number <= 3, value > 0)
+#' get_loading_data(train_pca, component_number <= 3, value > 0)
 #'
 #' ## -----------------------------------------------------------------------------
 #'
 #' lm_workflow <- lm_workflow %>% fit(data = Chicago)
 #'
-#' get_component_data(lm_workflow, component_number <= 3)
+#' get_loading_data(lm_workflow, component_number <= 3)
 #'
 #'@export
-get_component_data <- function(x, ...) {
-    UseMethod("get_component_data")
+get_loading_data <- function(x, ...) {
+    UseMethod("get_loading_data")
 }
 
 #' @export
-#' @rdname get_component_data
-get_component_data.recipe <- function(x, ..., id, type = "pca") {
+#' @rdname get_loading_data
+get_loading_data.recipe <- function(x, ..., id, type = "pca") {
     step_id <- check_recipe_for_step(x, id, type)
     comp_vals <- recipes::tidy(x, id = step_id)
     # Convert component label to number
@@ -67,10 +67,10 @@ get_component_data.recipe <- function(x, ..., id, type = "pca") {
 }
 
 #' @export
-#' @rdname get_component_data
-get_component_data.workflow <- function(x, ..., id = NULL, type = "pca") {
+#' @rdname get_loading_data
+get_loading_data.workflow <- function(x, ..., id = NULL, type = "pca") {
     x <- workflows::pull_workflow_prepped_recipe(x)
-    get_component_data(x, ..., id = id, type = type)
+    get_loading_data(x, ..., id = id, type = type)
 }
 
 ## -----------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 #' Plot the largest PCA component loadings from a recipe or workflow
 #'
 #' A plot of the `n` largest component loadings is produced.
-#' @inheritParams get_component_data
+#' @inheritParams get_loading_data
 #' @param n The number of columns to plot (per component).
 #' @return A `ggplot` object.
 #' @examples
@@ -33,23 +33,23 @@
 #' cell_pca <- prep(cell_pca)
 #'
 #' # What were the top 10 channel 1 columns in the first three components?
-#' plot_top_components(cell_pca, grepl("ch_1", terms) & component_number <= 3, n = 10)
+#' plot_top_loadings(cell_pca, grepl("ch_1", terms) & component_number <= 3, n = 10)
 #'
 #' ## -----------------------------------------------------------------------------
 #'
 #' lr_workflow <- lr_workflow %>% fit(data = cells)
 #'
-#' plot_top_components(lr_workflow, component_number <= 3)
+#' plot_top_loadings(lr_workflow, component_number <= 3)
 #'
 #' @export
-plot_top_components <- function(x, ...) {
-    UseMethod("plot_top_components")
+plot_top_loadings <- function(x, ...) {
+    UseMethod("plot_top_loadings")
 }
 
 #' @export
-#' @rdname plot_top_components
-plot_top_components.recipe <- function(x, ..., n = 4, id = NULL, type = "pca") {
-    comp_vals <- get_component_data(x, ..., id = id, type = type)
+#' @rdname plot_top_loadings
+plot_top_loadings.recipe <- function(x, ..., n = 4, id = NULL, type = "pca") {
+    comp_vals <- get_loading_data(x, ..., id = id, type = type)
 
     comp_vals <-
         comp_vals %>%
@@ -77,8 +77,8 @@ plot_top_components.recipe <- function(x, ..., n = 4, id = NULL, type = "pca") {
 }
 
 #' @export
-#' @rdname plot_top_components
-plot_top_components.workflow <- function(x, ..., n = 4, id = NULL, type = "pca") {
+#' @rdname plot_top_loadings
+plot_top_loadings.workflow <- function(x, ..., n = 4, id = NULL, type = "pca") {
     x <- workflows::pull_workflow_prepped_recipe(x)
-    plot_top_components(x, ..., id = id, n = n, type = type)
+    plot_top_loadings(x, ..., id = id, n = n, type = type)
 }

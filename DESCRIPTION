@@ -47,4 +47,5 @@ Depends:
 Suggests: 
     modeldata,
     palmerpenguins,
-    parsnip
+    parsnip,
+    testthat

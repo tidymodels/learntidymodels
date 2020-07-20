@@ -36,5 +36,4 @@ Remotes:
     tidymodels/embed
 Depends: 
     tidyverse,
-    tidymodels,
-    palmerpenguins
+    tidymodels

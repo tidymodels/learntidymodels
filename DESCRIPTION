@@ -31,7 +31,6 @@ Imports:
     corrr,
     emojifont
 Remotes:
-    allisonhorst/palmerpenguins,
     rstudio-education/gradethis,
     tidymodels/embed
 Depends: 

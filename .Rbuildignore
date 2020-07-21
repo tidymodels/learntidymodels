@@ -8,3 +8,5 @@
 ^inst/.tsv$
 ^inst/tutorials/.*\.html$
 ^data-raw$
+^codecov\.yml$
+

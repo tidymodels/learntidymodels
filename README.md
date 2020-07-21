@@ -7,6 +7,8 @@
 
 [![R build
 status](https://github.com/tidymodels/learntidymodels/workflows/R-CMD-check/badge.svg)](https://github.com/tidymodels/learntidymodels/actions)
+[![Codecov test
+coverage](https://codecov.io/gh/tidymodels/learntidymodels/branch/master/graph/badge.svg)](https://codecov.io/gh/tidymodels/learntidymodels?branch=master)
 <!-- badges: end -->
 
 Learn [tidymodels](https://www.tidymodels.org/) in the browser or
@@ -41,7 +43,7 @@ learnr::run_tutorial("pca-recipes", package = "learntidymodels")
 
 | Tutorial      | Description                                                                                     |
 | :------------ | :---------------------------------------------------------------------------------------------- |
-| `pca-recipes` | Learn how to conduct dimensionality reduction algorithms using recipes package from tidymodels. |
+| `pca_recipes` | Learn how to conduct dimensionality reduction algorithms using recipes package from tidymodels. |
 
 ## Code of Conduct
 

@@ -18,6 +18,7 @@ library(corrr)
 library(tidytext)
 library(gradethis)
 library(sortable)
+library(learntidymodels)
 
 knitr::opts_chunk$set(echo = FALSE, exercise.checker = gradethis::grade_learnr)
 
@@ -521,84 +522,31 @@ pca_loading <- tidy(pca_prep, id = "pca", type = "coef")
 
 In the PCA setting, `loadings` indicate the correlation between the principal component and the variable. In other words, large loadings suggest that a variable has a strong effect on that principal component.
 
-Let's take a look at loadings we generated with the zoo data for the first four principle components and top six variables with largest variable loadings. Here, we plot the absolute values of the loadings to easily compare them, and color it by the direction of the loading (positive or negative):
+Let's take a look at loadings we generated with the zoo data!
 
-```{r load-plot, echo=FALSE}
-prin_comps <- c("PC1", "PC2", "PC3", "PC4")
-num_loads <- 6
+We will use `plot_top_loadings()` function from the `learntidymodels` package to plot the absolute values of the loadings to easily compare them, and color it by the direction of the loading (positive or negative). The `plot_top_loadings()` takes three arguments: 
 
-load_plot <- pca_loading %>%
-  filter(component %in% prin_comps) %>%
-  mutate(abs_load = abs(value),
-         direction = value > 0) %>%
-  group_by(component) %>%
-  top_n(num_loads, abs_load) %>%
-  ungroup()
++ A prepped recipe   
++ Conditional statements to filter the PCA data before plotting. For example, to plot first 3 components, one can provide `component_number <= 3`.   
++ Number of columns to plot per component.
 
-## Now let's plot!
+Fill in the blanks to plot the first four principle components and top six variables with largest absolute loadings:
 
-library(tidytext)
+```{r load-plot, exercise = TRUE}
+library(learntidymodels)
+plot_top_loadings(___, component_number ___, n = ___) + 
+scale_fill_manual(values = c("#372F60", "#CA225E")) +
+theme_minimal()
+```
 
-load_plot %>%
-  mutate(terms = tidytext::reorder_within(terms, abs_load, component)) %>%
-  ggplot(aes(abs_load, terms, fill = value > 0)) +
-  geom_col() +
-  facet_wrap(~component, scales = "free_y") +
-  tidytext::scale_y_reordered() +
-  scale_fill_manual(values = c("#372F60", "#CA225E")) +
-  labs(
-    x = "Absolute value of contribution",
-    y = NULL, fill = "Positive?"
-  ) +
-  theme_minimal()  
+```{r load-plot-solution}
+library(learntidymodels)
+plot_top_loadings(pca_prep, component_number <= 4, n = 6) + 
+scale_fill_manual(values = c("#372F60", "#CA225E")) +
+theme_minimal()
 ```
 
 It looks like PC1 (first principal component) is mostly about producing milk or eggs, and having hair. Notice the loading direction for milk and hair are the same, which is the opposite of eggs. Do you remember the strongest positive correlation we found? On the other hand, PC2 seems to be about the animal having a fin or being aquatic, both of which have the opposite direction to breathing. Both tails and feathers have a strong correlation with PC3, and finally, PC4 is mostly about being domestic or a predator, which have opposite directions. Overall, we can say that PC1 is mostly about being a _mammal_, PC2 is being a _fish_ or an _aquatic animal_, PC3 is being a _bird_, and PC4 is about being domesticated.
-
-Now that we have an idea about variable loadings, let's talk about how we made this plot. Just like anything in life, we first need to get our data ready.  
-
-1. To keep our plot simple, we looked at the loadings for the first four principle components and top six variables with largest absolute loadings. For that, we assign the principal components we would like to plot to `prin_comps` and number of loadings you would like to show to `num_loads`. Feel free to change what goes into these variables to plot more or less information.  
-
-1. We will add two new columns to `pca_loading` before plotting them:
-
-    + Column `abs_load` will contain the absolute values of the loadings.
-    + Column `direction` will inform us of their direction in relation to the principal component. 
-
-1. Then we will use two functions from the [tidytext](https://github.com/juliasilge/tidytext) package: `reorder_within()` and `scale_y_reordered()` to order our bar plot neatly within facets.  
-
-```{r pc-cont, exercise=TRUE, exercise.lines=30}
-prin_comps <- c("PC1", "PC2", "PC3", "PC4")
-num_loads <- 6
-
-load_plot <- pca_loading %>%
-  filter(component %in% prin_comps) %>%
-  mutate(abs_load = abs(value),
-         direction = value > 0) %>%
-  group_by(component) %>%
-  top_n(num_loads, abs_load) %>%
-  ungroup() 
-
-head(load_plot, 3)
-
-## Now let's plot!
-
-library(tidytext)
-
-load_plot %>%
-  mutate(terms = tidytext::reorder_within(terms, abs_load, component)) %>%
-  ggplot(aes(abs_load, terms, fill = direction)) +
-  geom_col() +
-  facet_wrap(~component, scales = "free_y") +
-  tidytext::scale_y_reordered() +
-  scale_fill_manual(values = c("#372F60", "#CA225E")) +
-  labs(
-    x = "Absolute value of contribution",
-    y = NULL, fill = "Positive?"
-  ) +
-  theme_minimal()  
-```  
-  
-Good job!
 
 ### Bake a recipe
 

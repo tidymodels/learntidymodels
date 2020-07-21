@@ -132,3 +132,48 @@ test_that('PLS workflow with filters', {
         raw_pls %>% filter(component == "PLS1") %>% pull(value)
     )
 })
+
+## -----------------------------------------------------------------------------
+
+test_that('bad inputs', {
+    expect_error(
+        get_loading_data(train_pls),
+        "The recipe does not appear to use step_pca()"
+    )
+    expect_error(
+        get_loading_data(pls_workflow),
+        "The recipe does not appear to use step_pca()"
+    )
+
+    pca_twice <-
+        recipe(ridership ~ ., data = Chicago %>% dplyr::select(1:21)) %>%
+        step_center(all_predictors()) %>%
+        step_scale(all_predictors(), id = "scale") %>%
+        step_pca(Austin, Quincy_Wells, Belmont,  id = "1st") %>%
+        step_pca(Archer_35th, Oak_Park, Western, id = "2nd")
+
+    expect_error(
+        get_loading_data(pca_twice),
+        'argument "id" is missing, with no default'
+    )
+
+    expect_error(
+        get_loading_data(pca_twice, id = "1st"),
+        'prep\\(\\)'
+    )
+
+    expect_error(
+        get_loading_data(pca_twice, id = TRUE),
+        'should be either a single character string or single numeric value'
+    )
+
+    expect_error(
+        get_loading_data(pca_twice, id = 1),
+        'does not appear to correspond to a pca step'
+    )
+
+    expect_error(
+        get_loading_data(pca_twice, id = "scale"),
+        'does not appear to correspond to a pca step'
+    )
+})

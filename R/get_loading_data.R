@@ -92,7 +92,7 @@ check_recipe_for_step <- function(x, id, type = "pca") {
                       "steps.")
             )
         } else {
-            if (length(id) != 1 | all(!is.numeric(id)) | all(!is.character(id))) {
+            if (length(id) != 1 | (all(!is.numeric(id)) & all(!is.character(id)))) {
                 rlang::abort(
                     paste("'id' should be either a single character string or single",
                           "numeric value.")

@@ -1,6 +1,6 @@
 Package: learntidymodels
 Title: Learn 'tidymodels' with interactive 'learnr' primers
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: c(
     person(given = "Alison", family = "Hill", 
            email = "alison@rstudio.com", role = c("aut"),
@@ -29,12 +29,28 @@ Imports:
     sortable,
     embed,
     corrr,
-    emojifont
+    emojifont,
+    recipes,
+    dplyr,
+    rlang,
+    ggplot2,
+    workflows,
+    forcats,
+    utils,
+    tibble
 Remotes:
     allisonhorst/palmerpenguins,
     rstudio-education/gradethis,
     tidymodels/embed
 Depends: 
     tidyverse,
-    tidymodels,
-    palmerpenguins
+    tidymodels
+Suggests: 
+    modeldata,
+    palmerpenguins,
+    parsnip,
+    mixOmics,
+    testthat,
+    covr
+biocViews: 
+    mixOmics

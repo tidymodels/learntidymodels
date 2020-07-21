@@ -1,6 +1,5 @@
 #' @importFrom utils globalVariables
 #' @importFrom dplyr %>%
-#' @importFrom embed step_embed
 #'
 ## -----------------------------------------------------------------------------
 

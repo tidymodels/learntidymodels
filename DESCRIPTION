@@ -27,7 +27,6 @@ Imports:
     learnr,
     gradethis,
     sortable,
-    embed,
     corrr,
     emojifont,
     recipes,

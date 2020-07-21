@@ -49,6 +49,7 @@ Suggests:
     modeldata,
     palmerpenguins,
     parsnip,
+    mixOmics,
     testthat,
     covr
 biocViews: 

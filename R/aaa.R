@@ -1,6 +1,7 @@
 #' @importFrom utils globalVariables
 #' @importFrom dplyr %>%
-
+#' @importFrom embed step_embed
+#'
 ## -----------------------------------------------------------------------------
 
 # token imports to stop R CMD check from complaining

@@ -72,3 +72,63 @@ test_that('PCA workflow with filters', {
         )
     }
 })
+
+
+## -----------------------------------------------------------------------------
+
+test_that('PLS recipe with no options', {
+    raw_pls <- tidy(train_pls, 3)
+    step_data <- get_loading_data(train_pls, type = "pls")
+    comps <- unique(step_data$component)
+    for(i in comps) {
+        expect_equal(
+            step_data %>% filter(component == i) %>% pull(value),
+            raw_pls %>% filter(component == i) %>% pull(value)
+        )
+    }
+})
+
+test_that('PLS workflow with no options', {
+    raw_pls <-
+        pls_workflow %>%
+        pull_workflow_prepped_recipe() %>%
+        tidy(3)
+
+    step_data <- get_loading_data(pls_workflow, type = "pls")
+    comps <- unique(step_data$component)
+    for(i in comps) {
+        expect_equal(
+            step_data %>% filter(component == i) %>% pull(value),
+            raw_pls %>% filter(component == i) %>% pull(value)
+        )
+    }
+})
+
+## -----------------------------------------------------------------------------
+
+test_that('PLS recipe with filters', {
+    raw_pls <- tidy(train_pls, 3)
+
+    step_data <- get_loading_data(train_pls, value > .3, type = "pls")
+    comps <- unique(step_data$component)
+    for(i in comps) {
+        expect_equal(
+            step_data %>% filter(component == i) %>% pull(value),
+            raw_pls %>% filter(component == i & value > .3) %>% pull(value)
+        )
+    }
+})
+
+
+test_that('PLS workflow with filters', {
+    raw_pls <-
+        pls_workflow %>%
+        pull_workflow_prepped_recipe() %>%
+        tidy(3)
+
+    step_data <- get_loading_data(pls_workflow, component_number <= 1, type = "pls")
+    expect_equal(
+        step_data %>% pull(value),
+        raw_pls %>% filter(component == "PLS1") %>% pull(value)
+    )
+})

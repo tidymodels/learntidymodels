@@ -36,7 +36,8 @@ Imports:
     ggplot2,
     workflows,
     forcats,
-    utils
+    utils,
+    tibble
 Remotes:
     allisonhorst/palmerpenguins,
     rstudio-education/gradethis,
@@ -48,4 +49,5 @@ Suggests:
     modeldata,
     palmerpenguins,
     parsnip,
-    testthat
+    testthat,
+    covr

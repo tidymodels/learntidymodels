@@ -51,3 +51,5 @@ Suggests:
     parsnip,
     testthat,
     covr
+biocViews: 
+    mixOmics

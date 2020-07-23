@@ -43,7 +43,8 @@ Remotes:
     tidymodels/embed
 Depends: 
     tidyverse,
-    tidymodels
+    tidymodels,
+    R (>= 2.10)
 Suggests: 
     modeldata,
     palmerpenguins,
@@ -53,4 +54,3 @@ Suggests:
     covr
 biocViews: 
     mixOmics
-

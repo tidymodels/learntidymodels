@@ -39,12 +39,12 @@ Imports:
     utils,
     tibble
 Remotes:
-    allisonhorst/palmerpenguins,
     rstudio-education/gradethis,
     tidymodels/embed
 Depends: 
     tidyverse,
-    tidymodels
+    tidymodels,
+    R (>= 2.10)
 Suggests: 
     modeldata,
     palmerpenguins,

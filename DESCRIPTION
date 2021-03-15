@@ -1,5 +1,5 @@
 Package: learntidymodels
-Title: Learn 'tidymodels' with interactive 'learnr' primers
+Title: Learn 'tidymodels' with Interactive 'learnr' Primers
 Version: 0.0.0.9001
 Authors@R: c(
     person(given = "Alison", family = "Hill", 
@@ -22,7 +22,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.1.9001
 Imports: 
     learnr,
     gradethis,
@@ -39,15 +39,12 @@ Imports:
     utils,
     tibble
 Remotes:
-    allisonhorst/palmerpenguins,
-    rstudio-education/gradethis,
-    tidymodels/embed
+    rstudio-education/gradethis
 Depends: 
     tidyverse,
     tidymodels
 Suggests: 
     modeldata,
-    palmerpenguins,
     parsnip,
     mixOmics,
     testthat,

@@ -1,5 +1,5 @@
 Package: learntidymodels
-Title: Learn 'tidymodels' with interactive 'learnr' primers
+Title: Learn 'tidymodels' with Interactive 'learnr' Primers
 Version: 0.0.0.9001
 Authors@R: c(
     person(given = "Alison", family = "Hill", 

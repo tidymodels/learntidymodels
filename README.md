@@ -9,11 +9,12 @@
 status](https://github.com/tidymodels/learntidymodels/workflows/R-CMD-check/badge.svg)](https://github.com/tidymodels/learntidymodels/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/tidymodels/learntidymodels/branch/master/graph/badge.svg)](https://codecov.io/gh/tidymodels/learntidymodels?branch=master)
+[![R-CMD-check](https://github.com/tidymodels/learntidymodels/workflows/R-CMD-check/badge.svg)](https://github.com/tidymodels/learntidymodels/actions)
 <!-- badges: end -->
 
 Learn [tidymodels](https://www.tidymodels.org/) in the browser or
 locally in your RStudio IDE with interactive
-[learnr](https://rstudio.github.io/learnr/) primers\!
+[learnr](https://rstudio.github.io/learnr/) primers!
 
 ## Installation
 
@@ -36,13 +37,13 @@ learnr::run_tutorial("tutorial-of-choice", package = "learntidymodels")
 For example:
 
 ``` r
-learnr::run_tutorial("pca_recipes", package = "learntidymodels")
+learnr::run_tutorial("pca-recipes", package = "learntidymodels")
 ```
 
 ## List of available tutorials
 
 | Tutorial      | Description                                                                                     |
-| :------------ | :---------------------------------------------------------------------------------------------- |
+|:--------------|:------------------------------------------------------------------------------------------------|
 | `pca_recipes` | Learn how to conduct dimensionality reduction algorithms using recipes package from tidymodels. |
 
 ## Code of Conduct

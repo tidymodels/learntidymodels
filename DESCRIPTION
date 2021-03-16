@@ -1,5 +1,5 @@
 Package: learntidymodels
-Title: Learn 'tidymodels' with interactive 'learnr' primers
+Title: Learn 'tidymodels' with Interactive 'learnr' Primers
 Version: 0.0.0.9001
 Authors@R: c(
     person(given = "Alison", family = "Hill", 
@@ -19,10 +19,10 @@ Description: The 'tidymodels' ecosystem is a collection of packages for
     of self-paced interactive tutorials and primers, created using R Markdown 
     and 'learnr'.
 License: MIT + file LICENSE
-Encoding: UTF-8
-LazyData: true
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+Depends: 
+    R (>= 3.1),
+    tidyverse,
+    tidymodels
 Imports: 
     learnr,
     gradethis,
@@ -38,19 +38,17 @@ Imports:
     forcats,
     utils,
     tibble
-Remotes:
-    allisonhorst/palmerpenguins,
-    rstudio-education/gradethis,
-    tidymodels/embed
-Depends: 
-    tidyverse,
-    tidymodels
 Suggests: 
     modeldata,
-    palmerpenguins,
     parsnip,
     mixOmics,
     testthat,
     covr
 biocViews: 
     mixOmics
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1.9001
+Remotes:
+    rstudio-education/gradethis

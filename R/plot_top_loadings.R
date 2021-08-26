@@ -68,7 +68,7 @@ plot_top_loadings.recipe <- function(x, ..., n = 4, id = NULL, type = "pca") {
     ggplot2::ggplot(comp_vals, ggplot2::aes(x = order, y = abs_value, fill = `Positive?`)) +
         ggplot2::geom_col() +
         ggplot2::coord_flip() +
-        ggplot2::facet_wrap( vars(component), scales = "free") +
+        ggplot2::facet_wrap( vars(component), scales = "free_y") +
         ggplot2::scale_x_continuous(
             breaks = comp_vals$order,
             labels = comp_vals$terms,

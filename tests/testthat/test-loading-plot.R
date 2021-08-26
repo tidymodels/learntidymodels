@@ -71,8 +71,8 @@ test_that('PCA recipe - top loadings', {
         names(p$data),
         c('terms', 'value', 'component', 'id', 'component_number', 'Positive?', 'abs_value', 'order')
     )
-    expect_equal(rlang::get_expr(p$mapping$x), expr(abs_value))
-    expect_equal(rlang::get_expr(p$mapping$y), expr(terms))
+    expect_equal(rlang::get_expr(p$mapping$x), expr(order))
+    expect_equal(rlang::get_expr(p$mapping$y), expr(abs_value))
     expect_equal(rlang::get_expr(p$mapping$fill), expr(`Positive?`))
     expect_null(p$labels$y)
     expect_equal(p$labels$x, "Abs. Coefficient Value")
@@ -89,8 +89,8 @@ test_that('PCA workflow - top loadings', {
         names(p$data),
         c('terms', 'value', 'component', 'id', 'component_number', 'Positive?', 'abs_value', 'order')
     )
-    expect_equal(rlang::get_expr(p$mapping$x), expr(abs_value))
-    expect_equal(rlang::get_expr(p$mapping$y), expr(terms))
+    expect_equal(rlang::get_expr(p$mapping$x), expr(order))
+    expect_equal(rlang::get_expr(p$mapping$y), expr(abs_value))
     expect_equal(rlang::get_expr(p$mapping$fill), expr(`Positive?`))
     expect_null(p$labels$y)
     expect_equal(p$labels$x, "Abs. Coefficient Value")
@@ -107,8 +107,8 @@ test_that('PLS recipe - top loadings', {
         names(p$data),
         c('terms', 'value', 'component', 'id', 'component_number', 'Positive?', 'abs_value', 'order')
     )
-    expect_equal(rlang::get_expr(p$mapping$x), expr(abs_value))
-    expect_equal(rlang::get_expr(p$mapping$y), expr(terms))
+    expect_equal(rlang::get_expr(p$mapping$x), expr(order))
+    expect_equal(rlang::get_expr(p$mapping$y), expr(abs_value))
     expect_equal(rlang::get_expr(p$mapping$fill), expr(`Positive?`))
     expect_null(p$labels$y)
     expect_equal(p$labels$x, "Abs. Coefficient Value")
@@ -125,8 +125,8 @@ test_that('PLS workflow - top loadings', {
         names(p$data),
         c('terms', 'value', 'component', 'id', 'component_number', 'Positive?', 'abs_value', 'order')
     )
-    expect_equal(rlang::get_expr(p$mapping$x), expr(abs_value))
-    expect_equal(rlang::get_expr(p$mapping$y), expr(terms))
+    expect_equal(rlang::get_expr(p$mapping$x), expr(order))
+    expect_equal(rlang::get_expr(p$mapping$y), expr(abs_value))
     expect_equal(rlang::get_expr(p$mapping$fill), expr(`Positive?`))
     expect_null(p$labels$y)
     expect_equal(p$labels$x, "Abs. Coefficient Value")

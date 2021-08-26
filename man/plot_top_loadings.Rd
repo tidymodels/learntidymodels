@@ -62,13 +62,13 @@ lr_workflow <-
 
 cell_pca <- prep(cell_pca)
 
-# What were the top 10 channel 1 columns in the first three components?
-plot_top_loadings(cell_pca, grepl("ch_1", terms) & component_number <= 3, n = 10)
+# What were the top 10 channel 1 columns in the first two components?
+plot_top_loadings(cell_pca, grepl("ch_1", terms) & component_number <= 2, n = 10)
 
 ## -----------------------------------------------------------------------------
 
 lr_workflow <- lr_workflow \%>\% fit(data = cells)
 
-plot_top_loadings(lr_workflow, component_number <= 3)
+plot_top_loadings(lr_workflow, component_number <= 4)
 
 }

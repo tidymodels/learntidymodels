@@ -32,14 +32,14 @@
 #'
 #' cell_pca <- prep(cell_pca)
 #'
-#' # What were the top 10 channel 1 columns in the first three components?
-#' plot_top_loadings(cell_pca, grepl("ch_1", terms) & component_number <= 3, n = 10)
+#' # What were the top 10 channel 1 columns in the first two components?
+#' plot_top_loadings(cell_pca, grepl("ch_1", terms) & component_number <= 2, n = 10)
 #'
 #' ## -----------------------------------------------------------------------------
 #'
 #' lr_workflow <- lr_workflow %>% fit(data = cells)
 #'
-#' plot_top_loadings(lr_workflow, component_number <= 3)
+#' plot_top_loadings(lr_workflow, component_number <= 4)
 #'
 #' @export
 plot_top_loadings <- function(x, ...) {
@@ -58,16 +58,17 @@ plot_top_loadings.recipe <- function(x, ..., n = 4, id = NULL, type = "pca") {
             abs_value = abs(value)
         )%>%
         dplyr::group_by(component) %>%
-        dplyr::top_n(n, abs_value) %>%
+        dplyr::slice_max(abs_value, n = n) %>%
         dplyr::ungroup() %>%
         dplyr::arrange(component, abs_value) %>%
         dplyr::mutate(order = dplyr::row_number())
 
     # Tactics based on
     # https://drsimonj.svbtle.com/ordering-categories-within-ggplot2-facets
-    ggplot2::ggplot(comp_vals, ggplot2::aes(x = abs_value, y = terms, fill = `Positive?`)) +
+    ggplot2::ggplot(comp_vals, ggplot2::aes(x = order, y = abs_value, fill = `Positive?`)) +
         ggplot2::geom_col() +
-        ggplot2::facet_wrap( ~ component, scales = "free_y") +
+        ggplot2::coord_flip() +
+        ggplot2::facet_wrap( vars(component), scales = "free") +
         ggplot2::scale_x_continuous(
             breaks = comp_vals$order,
             labels = comp_vals$terms,

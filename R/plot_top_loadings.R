@@ -74,7 +74,7 @@ plot_top_loadings.recipe <- function(x, ..., n = 4, id = NULL, type = "pca") {
             labels = comp_vals$terms,
             expand = c(0,0)
         )  +
-        ggplot2::labs(y = NULL, x = "Abs. Coefficient Value")
+        ggplot2::labs(x = NULL, y = "Abs. Coefficient Value")
 }
 
 #' @export

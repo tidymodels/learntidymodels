@@ -34,7 +34,7 @@ Imports:
     dplyr,
     rlang,
     ggplot2,
-    workflows,
+    workflows (>= 0.2.3),
     forcats,
     utils,
     tibble

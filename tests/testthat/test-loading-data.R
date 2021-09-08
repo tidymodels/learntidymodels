@@ -20,7 +20,7 @@ test_that('PCA recipe with no options', {
 test_that('PCA workflow with no options', {
     raw_pca <-
         pca_workflow %>%
-        pull_workflow_prepped_recipe() %>%
+        extract_recipe() %>%
         pluck("steps") %>%
         pluck(3) %>%
         pluck("res") %>%
@@ -56,7 +56,7 @@ test_that('PCA recipe with filters', {
 test_that('PCA workflow with filters', {
     raw_pca <-
         pca_workflow %>%
-        pull_workflow_prepped_recipe() %>%
+        extract_recipe() %>%
         pluck("steps") %>%
         pluck(3) %>%
         pluck("res") %>%
@@ -91,7 +91,7 @@ test_that('PLS recipe with no options', {
 test_that('PLS workflow with no options', {
     raw_pls <-
         pls_workflow %>%
-        pull_workflow_prepped_recipe() %>%
+        extract_recipe() %>%
         tidy(3)
 
     step_data <- get_loading_data(pls_workflow, type = "pls")
@@ -123,7 +123,7 @@ test_that('PLS recipe with filters', {
 test_that('PLS workflow with filters', {
     raw_pls <-
         pls_workflow %>%
-        pull_workflow_prepped_recipe() %>%
+        extract_recipe() %>%
         tidy(3)
 
     step_data <- get_loading_data(pls_workflow, component_number <= 1, type = "pls")

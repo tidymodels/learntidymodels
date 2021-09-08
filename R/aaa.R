@@ -13,6 +13,6 @@
 
 utils::globalVariables(
     c(
-        "Positive?", "abs_value", "component", "terms", "value"
+        "Positive?", "abs_value", "component", "terms", "value", "vars"
     )
 )

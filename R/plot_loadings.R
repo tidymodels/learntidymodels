@@ -67,6 +67,6 @@ plot_loadings.recipe <- function(x, ..., id = NULL, type = "pca") {
 #' @export
 #' @rdname plot_loadings
 plot_loadings.workflow <- function(x, ..., id = NULL) {
-    x <- workflows::pull_workflow_prepped_recipe(x)
+    x <- workflows::extract_recipe(x)
     plot_loadings(x, ..., id = id)
 }

@@ -69,7 +69,7 @@ get_loading_data.recipe <- function(x, ..., id, type = "pca") {
 #' @export
 #' @rdname get_loading_data
 get_loading_data.workflow <- function(x, ..., id = NULL, type = "pca") {
-    x <- workflows::pull_workflow_prepped_recipe(x)
+    x <- workflows::extract_recipe(x)
     get_loading_data(x, ..., id = id, type = type)
 }
 

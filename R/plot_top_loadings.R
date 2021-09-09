@@ -80,6 +80,6 @@ plot_top_loadings.recipe <- function(x, ..., n = 4, id = NULL, type = "pca") {
 #' @export
 #' @rdname plot_top_loadings
 plot_top_loadings.workflow <- function(x, ..., n = 4, id = NULL, type = "pca") {
-    x <- workflows::pull_workflow_prepped_recipe(x)
+    x <- workflows::extract_recipe(x)
     plot_top_loadings(x, ..., id = id, n = n, type = type)
 }

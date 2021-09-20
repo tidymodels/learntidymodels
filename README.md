@@ -37,7 +37,7 @@ learnr::run_tutorial("tutorial-of-choice", package = "learntidymodels")
 For example:
 
 ``` r
-learnr::run_tutorial("pca-recipes", package = "learntidymodels")
+learnr::run_tutorial("pca_recipes", package = "learntidymodels")
 ```
 
 ## List of available tutorials

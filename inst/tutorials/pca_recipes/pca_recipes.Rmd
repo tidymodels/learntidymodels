@@ -355,11 +355,6 @@ pca_rec <- recipe(~., data = zoo, ) %>%
   update_role(animal_name, animal_type, new_role = "id")
 ```
 
-```{r role-check}
-pca_rec <- recipe(~., data = zoo, ) %>%
-  update_role(animal_name, animal_type, new_role = "id")
-```
-
 Try using `summary` to see the defined roles in `pca_rec` and arrange them by `role` column.
 
 ```{r role-sum, exercise=TRUE}

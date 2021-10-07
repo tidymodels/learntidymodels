@@ -345,13 +345,13 @@ Once we initiate the recipe, we can keep adding new [roles](https://tidymodels.g
 For example, we already told our recipe to include all variables with our formula; however, we want to exclude identifier column `animal_name` and `animal_type` from our analysis. On the other hand we need these variables later when we are plotting our results. By using `update_role()` we exclude these variables from our analysis **without** completely dropping them in the next steps:
 
 ```{r role, exercise=TRUE}
-pca_rec <- recipe(~., data = zoo, ) %>%
+pca_rec <- recipe(~., data = zoo) %>%
   # update the role for animal_name and animal_type
   update_role(___, ___, new_role = "id")
 ```
 
 ```{r role-solution}
-pca_rec <- recipe(~., data = zoo, ) %>%
+pca_rec <- recipe(~., data = zoo) %>%
   update_role(animal_name, animal_type, new_role = "id")
 ```
 

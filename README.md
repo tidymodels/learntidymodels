@@ -8,7 +8,7 @@
 [![R build
 status](https://github.com/tidymodels/learntidymodels/workflows/R-CMD-check/badge.svg)](https://github.com/tidymodels/learntidymodels/actions)
 [![Codecov test
-coverage](https://codecov.io/gh/tidymodels/learntidymodels/branch/master/graph/badge.svg)](https://codecov.io/gh/tidymodels/learntidymodels?branch=master)
+coverage](https://codecov.io/gh/tidymodels/learntidymodels/branch/main/graph/badge.svg)](https://codecov.io/gh/tidymodels/learntidymodels?branch=main)
 [![R-CMD-check](https://github.com/tidymodels/learntidymodels/workflows/R-CMD-check/badge.svg)](https://github.com/tidymodels/learntidymodels/actions)
 <!-- badges: end -->
 

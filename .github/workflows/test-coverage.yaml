@@ -17,6 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libglpk-dev
+
       - uses: r-lib/actions/setup-r@v1
         with:
           use-public-rspm: true

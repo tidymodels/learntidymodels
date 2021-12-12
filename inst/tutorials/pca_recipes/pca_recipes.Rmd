@@ -358,12 +358,16 @@ pca_rec <- recipe(~., data = zoo) %>%
 Try using `summary` to see the defined roles in `pca_rec` and arrange them by `role` column.
 
 ```{r role-sum, exercise=TRUE}
-summary(___) %>%
+recipe(~., data = zoo) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  summary() %>%
   arrange(___)
 ```
 
 ```{r role-sum-solution}
-summary(pca_rec) %>%
+recipe(~., data = zoo) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
+  summary() %>%
   arrange(role)
 ```
 

@@ -52,3 +52,4 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1.9001
 Remotes:
     rstudio/gradethis
+    rstudio/learnr

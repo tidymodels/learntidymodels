@@ -47,8 +47,8 @@ zoo_corr <- zoo %>%
 
 
 ### PCA ####
-pca_rec <- recipe(data = zoo, formula = animal_type ~.) %>%
-  update_role(animal_name, new_role = "id") %>%
+pca_rec <- recipe(data = zoo, formula = ~ .) %>%
+  update_role(animal_name, animal_type, new_role = "id") %>%
   step_scale(all_predictors()) %>%
   step_center(all_predictors()) %>%
   step_pca(all_predictors(), id = "pca")
@@ -358,7 +358,7 @@ pca_rec <- recipe(~., data = zoo) %>%
 Try using `summary` to see the defined roles in `pca_rec` and arrange them by `role` column.
 
 ```{r role-sum, exercise=TRUE}
-summary(___) %>%
+summary() %>%
   arrange(___)
 ```
 
@@ -381,7 +381,7 @@ Since PCA is a variance maximizing exercise, it is important to scale variables 
 We can also use the helper function `all_predictors()` to select all the variables that has a role defined as a `predictor`.
 
 ```{r step-norm, exercise=TRUE, exercise.lines=6}
-pca_rec <-recipe(~., data = zoo, ) %>%
+pca_rec <- recipe(~., data = zoo, ) %>%
   update_role(animal_name, animal_type, new_role = "id") %>%
   # add steps to scale and center
   step____(all_predictors()) %>%
@@ -389,7 +389,7 @@ pca_rec <-recipe(~., data = zoo, ) %>%
 ```
 
 ```{r step-norm-solution}
-pca_rec <-recipe(~., data = zoo, ) %>%
+pca_rec <- recipe(~., data = zoo, ) %>%
   update_role(animal_name, animal_type, new_role = "id") %>%
   step_scale(all_predictors()) %>%
   step_center(all_predictors())
@@ -413,7 +413,7 @@ We are ready to add our final step to compute our principle components!
 Use `step_pca()` to tell the recipe to o convert all variables (except `animal_name` and `animal_type`) into principal components.
 
 ```{r pca-step, exercise=TRUE}
-pca_rec <-recipe(~., data = zoo, ) %>%
+pca_rec <- recipe(~., data = zoo, ) %>%
   update_role(animal_name, animal_type, new_role = "id") %>%
   step_scale(all_predictors()) %>%
   step_center(all_predictors()) %>%
@@ -424,7 +424,7 @@ pca_rec
 ```
 
 ```{r pca-step-solution}
-pca_rec <-recipe(~., data = zoo, ) %>%
+pca_rec <- recipe(~., data = zoo, ) %>%
   update_role(animal_name, animal_type, new_role = "id") %>%
   step_scale(all_predictors()) %>%
   step_center(all_predictors()) %>%
@@ -530,15 +530,15 @@ Fill in the blanks to plot the first four principle components and top six varia
 ```{r load-plot, exercise = TRUE}
 library(learntidymodels)
 plot_top_loadings(___, component_number ___, n = ___) + 
-scale_fill_manual(values = c("#372F60", "#CA225E")) +
-theme_minimal()
+  scale_fill_manual(values = c("#372F60", "#CA225E")) +
+  theme_minimal()
 ```
 
 ```{r load-plot-solution}
 library(learntidymodels)
 plot_top_loadings(pca_prep, component_number <= 4, n = 6) + 
-scale_fill_manual(values = c("#372F60", "#CA225E")) +
-theme_minimal()
+  scale_fill_manual(values = c("#372F60", "#CA225E")) +
+  theme_minimal()
 ```
 
 It looks like PC1 (first principal component) is mostly about producing milk or eggs, and having hair. Notice the loading direction for milk and hair are the same, which is the opposite of eggs. Do you remember the strongest positive correlation we found? On the other hand, PC2 seems to be about the animal having a fin or being aquatic, both of which have the opposite direction to breathing. Both tails and feathers have a strong correlation with PC3, and finally, PC4 is mostly about being domestic or a predator, which have opposite directions. Overall, we can say that PC1 is mostly about being a _mammal_, PC2 is being a _fish_ or an _aquatic animal_, PC3 is being a _bird_, and PC4 is about being domesticated.
@@ -764,7 +764,7 @@ umap_bake %>%
 
 ```{r umap-plot-solution}
 umap_bake %>%
-  ggplot(aes(umap_1, umap_2, label=animal_name)) +
+  ggplot(aes(UMAP1, UMAP2, label=animal_name)) +
   geom_point(aes(color = animal_type), alpha = 0.7, size = 2)+
   geom_text(check_overlap = TRUE, hjust = "inward") +
   labs(color = NULL) +
@@ -829,7 +829,7 @@ umap_bake <- bake(umap_prep, zoo)
 
 ## Plot UMAP components
 umap_bake %>%
-  ggplot(aes(umap_1, umap_3, label=animal_name)) +
+  ggplot(aes(UMAP1, UMAP3, label=animal_name)) +
   geom_point(aes(color = animal_type), alpha = 0.7, size = 2)+
   geom_text(check_overlap = TRUE, hjust = "inward") +
   labs(color = NULL) +

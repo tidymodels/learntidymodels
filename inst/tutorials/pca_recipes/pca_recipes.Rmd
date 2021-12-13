@@ -378,10 +378,10 @@ Since PCA is a variance maximizing exercise, it is important to scale variables 
 + `step_scale()` normalizes numeric data to have a standard deviation of one 
 + `step_center()` normalizes numeric data to have a mean of zero.
 
-We can also use the helper function `all_predictors()` to select all the variables that has a role defined as a `predictor`.
+We can also use the helper function `all_predictors()` to select all the variables that have a role defined as `predictor`.
 
 ```{r step-norm, exercise=TRUE, exercise.lines=6}
-pca_rec <- recipe(~., data = zoo, ) %>%
+pca_rec <- recipe(~., data = zoo) %>%
   update_role(animal_name, animal_type, new_role = "id") %>%
   # add steps to scale and center
   step____(all_predictors()) %>%
@@ -389,7 +389,7 @@ pca_rec <- recipe(~., data = zoo, ) %>%
 ```
 
 ```{r step-norm-solution}
-pca_rec <- recipe(~., data = zoo, ) %>%
+pca_rec <- recipe(~., data = zoo) %>%
   update_role(animal_name, animal_type, new_role = "id") %>%
   step_scale(all_predictors()) %>%
   step_center(all_predictors())
@@ -410,21 +410,19 @@ question("What function can replace both centering and scaling steps?",
 
 We are ready to add our final step to compute our principle components!  
 
-Use `step_pca()` to tell the recipe to o convert all variables (except `animal_name` and `animal_type`) into principal components.
+Use `step_pca()` to tell the recipe to convert all variables (except `animal_name` and `animal_type`) into principal components.
 
 ```{r pca-step, exercise=TRUE}
-pca_rec <- recipe(~., data = zoo, ) %>%
+pca_rec <- recipe(~., data = zoo) %>%
   update_role(animal_name, animal_type, new_role = "id") %>%
   step_scale(all_predictors()) %>%
   step_center(all_predictors()) %>%
   # add step for PCA computation
   step____(___, id = "pca")
-
-pca_rec
 ```
 
 ```{r pca-step-solution}
-pca_rec <- recipe(~., data = zoo, ) %>%
+pca_rec <- recipe(~., data = zoo) %>%
   update_role(animal_name, animal_type, new_role = "id") %>%
   step_scale(all_predictors()) %>%
   step_center(all_predictors()) %>%

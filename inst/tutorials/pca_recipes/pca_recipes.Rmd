@@ -494,11 +494,11 @@ tidy(pca_prep, 2)
 Using the same method, we can also extract the variable _loadings_ for each component from our `step_pca`:
 
 ```{r tidy-pca, exercise=TRUE}
-pca_loading <- tidy(___, ___)
+tidy(___, ___)
 ```
 
 ```{r tidy-pca-solution}
-pca_loading <- tidy(pca_prep, 3)
+tidy(pca_prep, 3)
 ```
 
 ##### You can see that these _underlying values_ can be different for each step, but are always called `values` when extracted with the `tidy` method. You can find the definition of these _underlying values_ under the *Value* section in the help page of the related step function. For example, take a look at [`step_scale` help document](https://recipes.tidymodels.org/reference/step_scale.html) and scroll down to see the *Value*.
@@ -507,10 +507,14 @@ Alternatively, we can use the `id` argument (the one we specifically provided fo
 
 ```{r tidy-pca-id, exercise=TRUE}
 pca_loading <- tidy(___, ___, ___)
+
+pca_loading
 ```
 
 ```{r tidy-pca-id-solution}
 pca_loading <- tidy(pca_prep, id = "pca", type = "coef")
+
+pca_loading
 ```
 
 ##### How did we know what to extract? Take a look at the [`step_pca` help document](https://recipes.tidymodels.org/reference/step_pca.html). The `type` argument provides more details about how to use this step with the `tidy()` method.
